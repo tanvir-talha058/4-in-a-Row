@@ -2,8 +2,6 @@
 
 A classic two-player connection game built with Pygame where players take turns dropping colored discs into a vertical grid, aiming to connect four of their discs horizontally, vertically, or diagonally.
 
-![4 in a Row Game](https://github.com/tanvir-talha058/4-in-a-Row/raw/main/screenshots/gameplay.png)
-
 ## Features
 
 - Interactive game board with visual feedback
@@ -62,11 +60,6 @@ A classic two-player connection game built with Pygame where players take turns 
 - Press 'ESC' to exit the game
 - Score is displayed at the top of the game window
 
-## Screenshots
-
-![Start Screen](https://github.com/tanvir-talha058/4-in-a-Row/raw/main/screenshots/start-screen.png)
-![Gameplay](https://github.com/tanvir-talha058/4-in-a-Row/raw/main/screenshots/mid-game.png)
-![Win Screen](https://github.com/tanvir-talha058/4-in-a-Row/raw/main/screenshots/win-screen.png)
 
 
 
