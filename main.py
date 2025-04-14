@@ -698,3 +698,268 @@ class Connect4Game:
         
         # Evaluate the "state" after each possible move
         # Goal:
+        # Evaluate the "state" after each possible move
+        # Goal: Find a move that maximizes our future winning potential
+        best_col = None
+        best_potential = -float('inf')
+        
+        for col in valid_cols:
+            row = self.get_next_open_row(col)
+            temp_board = self.board.copy()
+            temp_board[row][col] = 2  # AI's piece
+            
+            # Calculate potential for this move
+            potential = self.calculate_potential(temp_board)
+            
+            if potential > best_potential:
+                best_potential = potential
+                best_col = col
+        
+        return best_col
+    
+    def calculate_potential(self, board):
+        """Calculate potential of a board position for water jug approach"""
+        # This is inspired by water jug problem's state evaluation
+        # We're trying to maximize our "good" states and minimize "bad" states
+        
+        ai_score = 0
+        player_score = 0
+        
+        # Check horizontal potentials
+        for r in range(ROW_COUNT):
+            for c in range(COLUMN_COUNT - 3):
+                window = [board[r][c+i] for i in range(4)]
+                ai_score += self.evaluate_window(window, 2, 1)
+                player_score += self.evaluate_window(window, 1, 2)
+        
+        # Check vertical potentials
+        for c in range(COLUMN_COUNT):
+            for r in range(ROW_COUNT - 3):
+                window = [board[r+i][c] for i in range(4)]
+                ai_score += self.evaluate_window(window, 2, 1)
+                player_score += self.evaluate_window(window, 1, 2)
+        
+        # Check positively sloped diagonal potentials
+        for r in range(ROW_COUNT - 3):
+            for c in range(COLUMN_COUNT - 3):
+                window = [board[r+i][c+i] for i in range(4)]
+                ai_score += self.evaluate_window(window, 2, 1)
+                player_score += self.evaluate_window(window, 1, 2)
+        
+        # Check negatively sloped diagonal potentials
+        for r in range(3, ROW_COUNT):
+            for c in range(COLUMN_COUNT - 3):
+                window = [board[r-i][c+i] for i in range(4)]
+                ai_score += self.evaluate_window(window, 2, 1)
+                player_score += self.evaluate_window(window, 1, 2)
+        
+        # Prioritize center columns
+        center_array = [int(board[r][COLUMN_COUNT//2]) for r in range(ROW_COUNT)]
+        center_count = center_array.count(2)
+        ai_score += center_count * 3
+        
+        # Return AI potential minus player potential with a small randomness
+        return ai_score - player_score * 1.5 + random.random()
+    
+    def winning_move_with_board(self, board, piece):
+        """Check if the given piece has a winning move on the board"""
+        # Check horizontal locations
+        for c in range(COLUMN_COUNT-3):
+            for r in range(ROW_COUNT):
+                if (board[r][c] == piece and 
+                    board[r][c+1] == piece and 
+                    board[r][c+2] == piece and 
+                    board[r][c+3] == piece):
+                    return True
+                
+        # Check vertical locations
+        for c in range(COLUMN_COUNT):
+            for r in range(ROW_COUNT-3):
+                if (board[r][c] == piece and 
+                    board[r+1][c] == piece and 
+                    board[r+2][c] == piece and 
+                    board[r+3][c] == piece):
+                    return True
+                
+        # Check positively sloped diagonals
+        for c in range(COLUMN_COUNT-3):
+            for r in range(ROW_COUNT-3):
+                if (board[r][c] == piece and 
+                    board[r+1][c+1] == piece and 
+                    board[r+2][c+2] == piece and 
+                    board[r+3][c+3] == piece):
+                    return True
+                
+        # Check negatively sloped diagonals
+        for c in range(COLUMN_COUNT-3):
+            for r in range(3, ROW_COUNT):
+                if (board[r][c] == piece and 
+                    board[r-1][c+1] == piece and 
+                    board[r-2][c+2] == piece and 
+                    board[r-3][c+3] == piece):
+                    return True
+        
+        return False
+    
+    def get_next_open_row_with_board(self, board, col):
+        """Get the next open row in the given column of the board"""
+        for r in range(ROW_COUNT):
+            if board[r][col] == 0:
+                return r
+        return -1
+    
+    def is_board_full_with_board(self, board):
+        """Check if the board is full"""
+        return not any(board[ROW_COUNT-1][col] == 0 for col in range(COLUMN_COUNT))
+    
+    def get_ai_move(self):
+        """Select the appropriate AI algorithm based on settings"""
+        # Adjust difficulty by using different algorithms or depths
+        if self.algorithm == BFS:
+            return self.ai_move_bfs()
+        elif self.algorithm == DFS:
+            return self.ai_move_dfs()
+        elif self.algorithm == MINIMAX:
+            depth = 2 if self.difficulty == EASY else 4 if self.difficulty == MEDIUM else 5
+            return self.ai_move_minimax(depth)
+        elif self.algorithm == ALPHA_BETA:
+            depth = 3 if self.difficulty == EASY else 5 if self.difficulty == MEDIUM else 7
+            return self.ai_move_alpha_beta(depth)
+        elif self.algorithm == TIC_TAC_TOE:
+            return self.ai_move_tic_tac_toe()
+        elif self.algorithm == WATER_JUG:
+            return self.ai_move_water_jug()
+        else:
+            # Default to random for easy difficulty
+            return self.ai_move_random()
+    
+    def run(self):
+        """Main game loop"""
+        self.reset_game()
+        
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                
+                if self.game_state == MENU:
+                    self.draw_menu()
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        mouse_x, mouse_y = pygame.mouse.get_pos()
+                        
+                        # Check if bot button was clicked
+                        if WIDTH/2 - 150 <= mouse_x <= WIDTH/2 + 150 and 250 <= mouse_y <= 310:
+                            self.vs_ai = True
+                            self.game_state = ALGORITHM_SELECT
+                        
+                        # Check if friend button was clicked
+                        if WIDTH/2 - 150 <= mouse_x <= WIDTH/2 + 150 and 350 <= mouse_y <= 410:
+                            self.vs_ai = False
+                            self.game_state = GAME
+                            self.reset_game()
+                
+                elif self.game_state == ALGORITHM_SELECT:
+                    self.draw_algorithm_menu()
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        mouse_x, mouse_y = pygame.mouse.get_pos()
+                        
+                        y_start = 120
+                        for i, algo_id in enumerate([BFS, DFS, MINIMAX, ALPHA_BETA, TIC_TAC_TOE, WATER_JUG]):
+                            if WIDTH/2 - 120 <= mouse_x <= WIDTH/2 + 120 and y_start + i*70 <= mouse_y <= y_start + i*70 + 60:
+                                self.algorithm = algo_id
+                                self.game_state = DIFFICULTY
+                
+                elif self.game_state == DIFFICULTY:
+                    self.draw_difficulty_menu()
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        mouse_x, mouse_y = pygame.mouse.get_pos()
+                        
+                        # Check if easy button was clicked
+                        if WIDTH/2 - 100 <= mouse_x <= WIDTH/2 + 100 and 150 <= mouse_y <= 210:
+                            self.difficulty = EASY
+                            self.game_state = GAME
+                            self.reset_game()
+                        
+                        # Check if medium button was clicked
+                        if WIDTH/2 - 100 <= mouse_x <= WIDTH/2 + 100 and 250 <= mouse_y <= 310:
+                            self.difficulty = MEDIUM
+                            self.game_state = GAME
+                            self.reset_game()
+                        
+                        # Check if hard button was clicked
+                        if WIDTH/2 - 100 <= mouse_x <= WIDTH/2 + 100 and 350 <= mouse_y <= 410:
+                            self.difficulty = HARD
+                            self.game_state = GAME
+                            self.reset_game()
+                
+                elif self.game_state == GAME:
+                    self.draw_board()
+                    
+                    if self.game_over:
+                        self.game_state = GAME_OVER
+                        continue
+                    
+                    if event.type == pygame.MOUSEMOTION:
+                        # Update preview piece position
+                        self.draw_board()
+                    
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        # Player's turn
+                        if self.turn == 0:
+                            mouse_x = event.pos[0]
+                            col = int(mouse_x // SQUARE_SIZE)
+                            
+                            if 0 <= col < COLUMN_COUNT and self.is_valid_location(col):
+                                row = self.get_next_open_row(col)
+                                self.drop_piece(row, col, 1)
+                                
+                                if self.winning_move(1):
+                                    self.winner = 1
+                                    self.game_over = True
+                                elif self.is_board_full():
+                                    self.winner = None  # Draw
+                                    self.game_over = True
+                                else:
+                                    self.turn = 1
+                                    
+                                self.draw_board()
+                
+                elif self.game_state == GAME_OVER:
+                    self.draw_board()
+                    self.draw_game_over()
+                    
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        mouse_x, mouse_y = pygame.mouse.get_pos()
+                        
+                        # Check if play again button was clicked
+                        if WIDTH/2 - 100 <= mouse_x <= WIDTH/2 + 100 and HEIGHT/2 + 50 <= mouse_y <= HEIGHT/2 + 110:
+                            self.game_state = MENU
+            
+            # AI's turn
+            if self.game_state == GAME and self.turn == 1 and self.vs_ai and not self.game_over:
+                # Add a slight delay to make it seem like AI is thinking
+                pygame.time.wait(500)
+                
+                col = self.get_ai_move()
+                
+                if self.is_valid_location(col):
+                    row = self.get_next_open_row(col)
+                    self.drop_piece(row, col, 2)
+                    
+                    if self.winning_move(2):
+                        self.winner = 2
+                        self.game_over = True
+                    elif self.is_board_full():
+                        self.winner = None  # Draw
+                        self.game_over = True
+                    else:
+                        self.turn = 0
+                        
+                    self.draw_board()
+            
+            pygame.time.wait(50)  # Small delay to reduce CPU usage
+
+if __name__ == "__main__":
+    game = Connect4Game()
+    game.run()
