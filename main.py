@@ -517,7 +517,7 @@ class Connect4Game:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     
-                    # Handle back button
+                    # back button
                     if self.game_state != MENU:
                         back_btn = pygame.Rect(20, 20, 50, 50)
                         if back_btn.collidepoint(mouse_x, mouse_y):
