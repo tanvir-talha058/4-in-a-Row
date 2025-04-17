@@ -49,16 +49,14 @@ class Connect4Game:
         self.game_state = MENU
         self.board = np.zeros((ROW_COUNT, COLUMN_COUNT))
         self.game_over = False
-        self.turn = 0  # 0 for player 1, 1 for player 2 or AI
+        self.turn = 0  
         self.difficulty = MEDIUM
         self.vs_ai = True
         self.winner = None
         
-        # Preload sounds
         self.drop_sound = pygame.mixer.Sound("drop.wav") if self.sound_exists("drop.wav") else None
         self.win_sound = pygame.mixer.Sound("win.wav") if self.sound_exists("win.wav") else None
         
-        # Animation variables
         self.animation_active = False
         self.animation_col = 0
         self.animation_row = 0
@@ -90,7 +88,6 @@ class Connect4Game:
         return -1
     
     def winning_move(self, piece):
-        # Check horizontal locations
         for c in range(COLUMN_COUNT-3):
             for r in range(ROW_COUNT):
                 if (self.board[r][c] == piece and 
@@ -98,8 +95,7 @@ class Connect4Game:
                     self.board[r][c+2] == piece and 
                     self.board[r][c+3] == piece):
                     return True
-                
-        # Check vertical locations
+       
         for c in range(COLUMN_COUNT):
             for r in range(ROW_COUNT-3):
                 if (self.board[r][c] == piece and 
@@ -107,8 +103,7 @@ class Connect4Game:
                     self.board[r+2][c] == piece and 
                     self.board[r+3][c] == piece):
                     return True
-                
-        # Check positively sloped diagonals
+        
         for c in range(COLUMN_COUNT-3):
             for r in range(ROW_COUNT-3):
                 if (self.board[r][c] == piece and 
@@ -116,8 +111,7 @@ class Connect4Game:
                     self.board[r+2][c+2] == piece and 
                     self.board[r+3][c+3] == piece):
                     return True
-                
-        # Check negatively sloped diagonals
+       
         for c in range(COLUMN_COUNT-3):
             for r in range(3, ROW_COUNT):
                 if (self.board[r][c] == piece and 
@@ -136,20 +130,16 @@ class Connect4Game:
         if corner_radius < 0:
             corner_radius = 0
         
-        # Draw main rect
         pygame.draw.rect(surface, color, rect, border_radius=corner_radius)
     
     def draw_board(self):
         self.screen.fill(BG_COLOR)
         
-        # Draw the back button
         back_btn = pygame.Rect(20, 20, 50, 50)
         pygame.draw.circle(self.screen, (160, 82, 45), back_btn.center, 25)
-        # Draw the arrow
         points = [(35, 45), (55, 45), (45, 35)]
         pygame.draw.polygon(self.screen, WHITE, points)
-        
-        # Draw the game board
+       
         board_rect = pygame.Rect(0, SQUARE_SIZE, WIDTH, HEIGHT - SQUARE_SIZE)
         pygame.draw.rect(self.screen, DARK_GREY, board_rect)
         
