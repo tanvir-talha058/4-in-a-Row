@@ -4,6 +4,7 @@ import numpy as np
 import random
 import math
 
+
 pygame.init()
 
 BLACK = (0, 0, 0)
