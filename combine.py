@@ -5,7 +5,6 @@ import time
 from enum import Enum
 from collections import deque
 
-# Initialize Pygame
 pygame.init()
 
 # --- Common Constants ---
