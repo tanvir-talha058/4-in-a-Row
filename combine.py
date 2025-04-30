@@ -5,9 +5,7 @@ import time
 from enum import Enum
 from collections import deque
 
-
 pygame.init()
-
 # --- Common Constants ---
 CELL_SIZE = 30
 GRID_WIDTH = 25
