@@ -34,6 +34,7 @@ MENU_BUTTON_COLOR = DARK_GRAY
 MENU_BUTTON_TEXT_COLOR = WHITE
 MENU_TEXT_COLOR = WHITE
 
+
 # --- Game States ---
 class GameState(Enum):
     MENU = 0
