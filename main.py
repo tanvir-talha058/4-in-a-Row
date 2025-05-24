@@ -6,7 +6,6 @@ import math
 
 pygame.init()
 
-
 BLACK = (0, 0, 0)
 BLUE = (0, 123, 167)
 RED = (255, 56, 51)
