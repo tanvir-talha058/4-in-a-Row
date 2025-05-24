@@ -31,6 +31,7 @@ TITLE_FONT = pygame.font.SysFont("sans-serif", 40, bold=True)
 MAIN_FONT = pygame.font.SysFont("sans-serif", 24)
 BUTTON_FONT = pygame.font.SysFont("sans-serif", 20)
 
+
 MENU = 0
 GAME = 1
 DIFFICULTY = 2
