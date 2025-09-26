@@ -30,17 +30,131 @@
             <div class="menu-content">
                 <h2>Select Game Mode</h2>
                 <button class="menu-btn" onclick="startGame('player')">
-                    <span class="btn-text">Player vs Player</span>
+                    <span class="btn-text">🔴 Connect 4</span>
+                    <div class="btn-subtitle">Classic strategy game</div>
                     <div class="btn-glow"></div>
                 </button>
                 <button class="menu-btn" onclick="showDifficultyMenu()">
-                    <span class="btn-text">Player vs AI</span>
+                    <span class="btn-text">🤖 AI Challenge</span>
+                    <div class="btn-subtitle">Play against smart AI</div>
+                    <div class="btn-glow"></div>
+                </button>
+                <button class="menu-btn" onclick="showKidsGamesMenu()">
+                    <span class="btn-text">🧠 Brain Games for Kids</span>
+                    <div class="btn-subtitle">Educational & fun learning games</div>
                     <div class="btn-glow"></div>
                 </button>
                 <button class="menu-btn" onclick="showMazeGame()">
-                    <span class="btn-text">Maze Rivals</span>
+                    <span class="btn-text">🏃 Maze Rivals</span>
+                    <div class="btn-subtitle">Adventure maze game</div>
                     <div class="btn-glow"></div>
                 </button>
+            </div>
+        </div>
+
+        <div class="kids-games-menu" id="kidsGamesMenu" style="display: none;">
+            <div class="menu-content kids-menu">
+                <h2>🎓 Brain Development Games</h2>
+                <div class="games-subtitle">Fun games to boost cognitive skills!</div>
+                
+                <div class="games-grid">
+                    <button class="game-card memory-game" onclick="startKidsGame('memory')">
+                        <div class="game-icon">🧩</div>
+                        <div class="game-title">Memory Match</div>
+                        <div class="game-desc">Match pairs to improve memory</div>
+                        <div class="skill-tags">
+                            <span class="skill-tag">Memory</span>
+                            <span class="skill-tag">Focus</span>
+                        </div>
+                    </button>
+
+                    <button class="game-card pattern-game" onclick="startKidsGame('pattern')">
+                        <div class="game-icon">🌈</div>
+                        <div class="game-title">Pattern Master</div>
+                        <div class="game-desc">Follow and repeat color sequences</div>
+                        <div class="skill-tags">
+                            <span class="skill-tag">Pattern</span>
+                            <span class="skill-tag">Sequence</span>
+                        </div>
+                    </button>
+
+                    <button class="game-card math-game" onclick="startKidsGame('math')">
+                        <div class="game-icon">🔢</div>
+                        <div class="game-title">Math Adventure</div>
+                        <div class="game-desc">Fun arithmetic with rewards</div>
+                        <div class="skill-tags">
+                            <span class="skill-tag">Math</span>
+                            <span class="skill-tag">Logic</span>
+                        </div>
+                    </button>
+
+                    <button class="game-card word-game" onclick="startKidsGame('word')">
+                        <div class="game-icon">📝</div>
+                        <div class="game-title">Word Builder</div>
+                        <div class="game-desc">Create words from letters</div>
+                        <div class="skill-tags">
+                            <span class="skill-tag">Vocabulary</span>
+                            <span class="skill-tag">Spelling</span>
+                        </div>
+                    </button>
+
+                    <button class="game-card puzzle-game" onclick="startKidsGame('puzzle')">
+                        <div class="game-icon">🧩</div>
+                        <div class="game-title">Shape Puzzle</div>
+                        <div class="game-desc">Fit shapes into correct spots</div>
+                        <div class="skill-tags">
+                            <span class="skill-tag">Spatial</span>
+                            <span class="skill-tag">Problem Solving</span>
+                        </div>
+                    </button>
+
+                    <button class="game-card color-game" onclick="startKidsGame('color')">
+                        <div class="game-icon">🎨</div>
+                        <div class="game-title">Color Symphony</div>
+                        <div class="game-desc">Learn colors and combinations</div>
+                        <div class="skill-tags">
+                            <span class="skill-tag">Colors</span>
+                            <span class="skill-tag">Creativity</span>
+                        </div>
+                    </button>
+                </div>
+
+                <button class="menu-btn back-btn" onclick="goToMainMenu()">
+                    <span class="btn-text">← Back to Main Menu</span>
+                    <div class="btn-glow"></div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Kids Game Container -->
+        <div class="kids-game-container" id="kidsGameContainer" style="display: none;">
+            <div class="kids-game-header">
+                <div class="game-title-display" id="kidsGameTitle">Memory Match</div>
+                <div class="kids-score-display">
+                    <div class="score-item">
+                        <span class="score-label">Score:</span>
+                        <span class="score-value" id="kidsScore">0</span>
+                    </div>
+                    <div class="score-item">
+                        <span class="score-label">Level:</span>
+                        <span class="score-value" id="kidsLevel">1</span>
+                    </div>
+                </div>
+                <div class="kids-controls">
+                    <button class="kids-control-btn" onclick="resetKidsGame()">🔄 Restart</button>
+                    <button class="kids-control-btn" onclick="goToKidsMenu()">🏠 Games Menu</button>
+                </div>
+            </div>
+            
+            <div class="kids-game-area" id="kidsGameArea">
+                <!-- Game content will be dynamically generated -->
+            </div>
+            
+            <div class="kids-feedback" id="kidsFeedback" style="display: none;">
+                <div class="feedback-content">
+                    <div class="feedback-icon" id="feedbackIcon">🎉</div>
+                    <div class="feedback-message" id="feedbackMessage">Great job!</div>
+                </div>
             </div>
         </div>
 

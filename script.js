@@ -41,6 +41,32 @@ let resources = [];
 let exitPos = { x: 23, y: 18 };
 let mazeScores = { player: 0, ai: 0 };
 
+// Kids Games State
+let currentKidsGame = '';
+let kidsScore = 0;
+let kidsLevel = 1;
+let kidsGameData = {};
+
+// Memory Game Data
+let memoryCards = [];
+let memoryFlippedCards = [];
+let memoryMatchedPairs = 0;
+
+// Pattern Game Data
+let patternSequence = [];
+let playerSequence = [];
+let patternStep = 0;
+let isShowingPattern = false;
+
+// Math Game Data
+let mathQuestion = {};
+let mathStreak = 0;
+
+// Word Game Data
+let currentWord = '';
+let wordLetters = [];
+let foundWords = [];
+
 // Animation States
 let dropAnimation = null;
 let winningCells = [];
@@ -607,9 +633,10 @@ function goToMenu() {
     
     const gameContainer = document.getElementById('gameContainer');
     const mazeGame = document.getElementById('mazeGame');
+    const kidsGameContainer = document.getElementById('kidsGameContainer');
     
     // Animate current screen exit
-    [gameContainer, mazeGame].forEach(container => {
+    [gameContainer, mazeGame, kidsGameContainer].forEach(container => {
         if (container.style.display !== 'none') {
             container.style.transform = 'scale(0.8)';
             container.style.opacity = '0';
@@ -619,7 +646,9 @@ function goToMenu() {
     setTimeout(() => {
         gameContainer.style.display = 'none';
         mazeGame.style.display = 'none';
+        kidsGameContainer.style.display = 'none';
         document.getElementById('difficultyMenu').style.display = 'none';
+        document.getElementById('kidsGamesMenu').style.display = 'none';
         
         const menu = document.getElementById('gameMenu');
         menu.style.display = 'flex';
@@ -633,6 +662,442 @@ function goToMenu() {
     }, 300);
     
     hideWinOverlay();
+}
+
+// Kids Games Functions
+function showKidsGamesMenu() {
+    playClickSound();
+    
+    const mainMenu = document.getElementById('gameMenu');
+    const kidsMenu = document.getElementById('kidsGamesMenu');
+    
+    // Animate main menu exit
+    mainMenu.style.transform = 'scale(0.8)';
+    mainMenu.style.opacity = '0';
+    
+    setTimeout(() => {
+        mainMenu.style.display = 'none';
+        kidsMenu.style.display = 'flex';
+        
+        // Animate kids menu entrance
+        setTimeout(() => {
+            kidsMenu.style.transform = 'scale(1)';
+            kidsMenu.style.opacity = '1';
+            kidsMenu.style.transition = 'all 0.5s ease';
+        }, 50);
+    }, 300);
+}
+
+function goToKidsMenu() {
+    playClickSound();
+    
+    const kidsGameContainer = document.getElementById('kidsGameContainer');
+    const kidsMenu = document.getElementById('kidsGamesMenu');
+    
+    // Animate game exit
+    kidsGameContainer.style.transform = 'scale(0.8)';
+    kidsGameContainer.style.opacity = '0';
+    
+    setTimeout(() => {
+        kidsGameContainer.style.display = 'none';
+        kidsMenu.style.display = 'flex';
+        
+        // Animate menu entrance
+        setTimeout(() => {
+            kidsMenu.style.transform = 'scale(1)';
+            kidsMenu.style.opacity = '1';
+            kidsMenu.style.transition = 'all 0.5s ease';
+        }, 50);
+    }, 300);
+}
+
+function startKidsGame(gameType) {
+    currentKidsGame = gameType;
+    kidsScore = 0;
+    kidsLevel = 1;
+    playClickSound();
+    
+    const kidsMenu = document.getElementById('kidsGamesMenu');
+    const kidsGameContainer = document.getElementById('kidsGameContainer');
+    
+    // Animate menu exit
+    kidsMenu.style.transform = 'scale(0.8)';
+    kidsMenu.style.opacity = '0';
+    
+    setTimeout(() => {
+        kidsMenu.style.display = 'none';
+        kidsGameContainer.style.display = 'flex';
+        
+        // Set game title
+        const gameTitles = {
+            memory: '🧩 Memory Match',
+            pattern: '🌈 Pattern Master',
+            math: '🔢 Math Adventure',
+            word: '📝 Word Builder',
+            puzzle: '🧩 Shape Puzzle',
+            color: '🎨 Color Symphony'
+        };
+        
+        document.getElementById('kidsGameTitle').textContent = gameTitles[gameType];
+        updateKidsScore();
+        
+        // Initialize specific game
+        switch(gameType) {
+            case 'memory':
+                initMemoryGame();
+                break;
+            case 'pattern':
+                initPatternGame();
+                break;
+            case 'math':
+                initMathGame();
+                break;
+            case 'word':
+                initWordGame();
+                break;
+            case 'puzzle':
+                initPuzzleGame();
+                break;
+            case 'color':
+                initColorGame();
+                break;
+        }
+        
+        // Animate game entrance
+        setTimeout(() => {
+            kidsGameContainer.style.transform = 'scale(1)';
+            kidsGameContainer.style.opacity = '1';
+            kidsGameContainer.style.transition = 'all 0.5s ease';
+        }, 50);
+    }, 300);
+}
+
+function updateKidsScore() {
+    document.getElementById('kidsScore').textContent = kidsScore;
+    document.getElementById('kidsLevel').textContent = kidsLevel;
+}
+
+function showKidsFeedback(message, icon = '🎉', isPositive = true) {
+    const feedback = document.getElementById('kidsFeedback');
+    const feedbackIcon = document.getElementById('feedbackIcon');
+    const feedbackMessage = document.getElementById('feedbackMessage');
+    
+    feedbackIcon.textContent = icon;
+    feedbackMessage.textContent = message;
+    
+    if (isPositive) {
+        feedback.style.background = 'linear-gradient(135deg, #27ae60, #2ecc71)';
+        playConnectionSound();
+    } else {
+        feedback.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
+        createSound(200, 0.3, 'sawtooth', 0.1);
+    }
+    
+    feedback.style.display = 'block';
+    
+    setTimeout(() => {
+        feedback.style.display = 'none';
+    }, 2000);
+}
+
+function resetKidsGame() {
+    playClickSound();
+    kidsScore = 0;
+    kidsLevel = 1;
+    updateKidsScore();
+    
+    // Restart current game
+    startKidsGame(currentKidsGame);
+}
+
+// Memory Game Implementation
+function initMemoryGame() {
+    const gameArea = document.getElementById('kidsGameArea');
+    const symbols = ['🌟', '🎈', '🦋', '🌈', '🎯', '🎨', '🎪', '🎭', '🎵', '🍎', '🌸', '🎊'];
+    
+    // Create pairs and shuffle
+    memoryCards = [];
+    const pairsNeeded = Math.min(6 + kidsLevel, 12);
+    const selectedSymbols = symbols.slice(0, pairsNeeded);
+    
+    selectedSymbols.forEach(symbol => {
+        memoryCards.push({ symbol, id: Math.random() });
+        memoryCards.push({ symbol, id: Math.random() });
+    });
+    
+    // Shuffle cards
+    memoryCards.sort(() => Math.random() - 0.5);
+    
+    memoryFlippedCards = [];
+    memoryMatchedPairs = 0;
+    
+    gameArea.innerHTML = `
+        <div class="game-instructions">
+            <h3>🧠 Find matching pairs!</h3>
+            <p>Click cards to flip them and find matching symbols</p>
+        </div>
+        <div class="memory-grid" id="memoryGrid">
+            ${memoryCards.map((card, index) => `
+                <button class="memory-card" data-index="${index}" onclick="flipMemoryCard(${index})">
+                    ${card.symbol}
+                </button>
+            `).join('')}
+        </div>
+    `;
+}
+
+function flipMemoryCard(index) {
+    const card = document.querySelector(`[data-index="${index}"]`);
+    const cardData = memoryCards[index];
+    
+    if (card.classList.contains('flipped') || card.classList.contains('matched') || memoryFlippedCards.length >= 2) {
+        return;
+    }
+    
+    playHoverSound();
+    card.classList.add('flipped');
+    memoryFlippedCards.push({ index, symbol: cardData.symbol });
+    
+    if (memoryFlippedCards.length === 2) {
+        setTimeout(() => {
+            checkMemoryMatch();
+        }, 1000);
+    }
+}
+
+function checkMemoryMatch() {
+    const [card1, card2] = memoryFlippedCards;
+    
+    if (card1.symbol === card2.symbol) {
+        // Match!
+        document.querySelector(`[data-index="${card1.index}"]`).classList.add('matched');
+        document.querySelector(`[data-index="${card2.index}"]`).classList.add('matched');
+        memoryMatchedPairs++;
+        kidsScore += 10;
+        
+        showKidsFeedback('Great match! 🎉');
+        
+        if (memoryMatchedPairs === memoryCards.length / 2) {
+            // Level complete!
+            kidsLevel++;
+            kidsScore += 50;
+            setTimeout(() => {
+                showKidsFeedback(`Level ${kidsLevel - 1} Complete! 🏆`, '🎊');
+                setTimeout(() => initMemoryGame(), 3000);
+            }, 1000);
+        }
+    } else {
+        // No match
+        document.querySelector(`[data-index="${card1.index}"]`).classList.remove('flipped');
+        document.querySelector(`[data-index="${card2.index}"]`).classList.remove('flipped');
+        showKidsFeedback('Try again! 🤔', '💭', false);
+    }
+    
+    memoryFlippedCards = [];
+    updateKidsScore();
+}
+
+// Pattern Game Implementation
+function initPatternGame() {
+    const gameArea = document.getElementById('kidsGameArea');
+    patternSequence = [];
+    playerSequence = [];
+    patternStep = 0;
+    
+    gameArea.innerHTML = `
+        <div class="game-instructions">
+            <h3>🌈 Follow the pattern!</h3>
+            <p>Watch the colors light up, then repeat the sequence</p>
+            <button class="kids-control-btn" onclick="startPattern()" id="startPatternBtn">Start Pattern</button>
+        </div>
+        <div class="pattern-display">
+            <button class="pattern-button red" onclick="patternButtonClick('red')"></button>
+            <button class="pattern-button blue" onclick="patternButtonClick('blue')"></button>
+            <button class="pattern-button green" onclick="patternButtonClick('green')"></button>
+            <button class="pattern-button yellow" onclick="patternButtonClick('yellow')"></button>
+            <button class="pattern-button purple" onclick="patternButtonClick('purple')"></button>
+            <button class="pattern-button orange" onclick="patternButtonClick('orange')"></button>
+        </div>
+    `;
+}
+
+function startPattern() {
+    const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+    patternSequence.push(colors[Math.floor(Math.random() * colors.length)]);
+    playerSequence = [];
+    patternStep = 0;
+    isShowingPattern = true;
+    
+    document.getElementById('startPatternBtn').style.display = 'none';
+    showPatternSequence();
+}
+
+function showPatternSequence() {
+    if (patternStep < patternSequence.length) {
+        const color = patternSequence[patternStep];
+        const button = document.querySelector(`.pattern-button.${color}`);
+        
+        button.classList.add('active');
+        createSound(300 + patternStep * 100, 0.3);
+        
+        setTimeout(() => {
+            button.classList.remove('active');
+            patternStep++;
+            setTimeout(() => showPatternSequence(), 300);
+        }, 600);
+    } else {
+        isShowingPattern = false;
+        patternStep = 0;
+        showKidsFeedback('Now repeat the pattern!', '👆');
+    }
+}
+
+function patternButtonClick(color) {
+    if (isShowingPattern) return;
+    
+    playClickSound();
+    playerSequence.push(color);
+    
+    const button = document.querySelector(`.pattern-button.${color}`);
+    button.classList.add('active');
+    setTimeout(() => button.classList.remove('active'), 200);
+    
+    if (playerSequence[playerSequence.length - 1] !== patternSequence[playerSequence.length - 1]) {
+        showKidsFeedback('Oops! Try again', '😅', false);
+        setTimeout(() => {
+            document.getElementById('startPatternBtn').style.display = 'inline-block';
+            patternSequence = [];
+        }, 1500);
+        return;
+    }
+    
+    if (playerSequence.length === patternSequence.length) {
+        kidsScore += 20;
+        kidsLevel = patternSequence.length;
+        updateKidsScore();
+        showKidsFeedback('Perfect! Next level!', '🎉');
+        setTimeout(() => startPattern(), 2000);
+    }
+}
+
+// Math Game Implementation  
+function initMathGame() {
+    generateMathQuestion();
+}
+
+function generateMathQuestion() {
+    const gameArea = document.getElementById('kidsGameArea');
+    const operations = ['+', '-'];
+    const maxNumber = 5 + (kidsLevel * 2);
+    
+    const num1 = Math.floor(Math.random() * maxNumber) + 1;
+    const num2 = Math.floor(Math.random() * maxNumber) + 1;
+    const operation = operations[Math.floor(Math.random() * operations.length)];
+    
+    let correctAnswer;
+    let question;
+    
+    if (operation === '+') {
+        correctAnswer = num1 + num2;
+        question = `${num1} + ${num2} = ?`;
+    } else {
+        if (num1 >= num2) {
+            correctAnswer = num1 - num2;
+            question = `${num1} - ${num2} = ?`;
+        } else {
+            correctAnswer = num2 - num1;
+            question = `${num2} - ${num1} = ?`;
+        }
+    }
+    
+    mathQuestion = { question, correctAnswer };
+    
+    // Generate wrong answers
+    const wrongAnswers = [];
+    while (wrongAnswers.length < 3) {
+        const wrong = correctAnswer + Math.floor(Math.random() * 10) - 5;
+        if (wrong !== correctAnswer && wrong >= 0 && !wrongAnswers.includes(wrong)) {
+            wrongAnswers.push(wrong);
+        }
+    }
+    
+    const allAnswers = [correctAnswer, ...wrongAnswers].sort(() => Math.random() - 0.5);
+    
+    gameArea.innerHTML = `
+        <div class="game-instructions">
+            <h3>🔢 Math Adventure!</h3>
+            <p>Solve the equation and click the correct answer</p>
+        </div>
+        <div style="text-align: center; margin: 2rem 0;">
+            <div style="font-size: 3rem; color: white; margin-bottom: 2rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                ${question}
+            </div>
+            <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+                ${allAnswers.map(answer => `
+                    <button class="math-answer-btn" onclick="checkMathAnswer(${answer})"
+                            style="padding: 1rem 2rem; font-size: 1.5rem; background: linear-gradient(135deg, #3498db, #2980b9); 
+                                   border: none; border-radius: 15px; color: white; cursor: pointer; 
+                                   transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
+                        ${answer}
+                    </button>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+function checkMathAnswer(answer) {
+    if (answer === mathQuestion.correctAnswer) {
+        kidsScore += 15;
+        mathStreak++;
+        updateKidsScore();
+        showKidsFeedback('Excellent! 🎉');
+        
+        if (mathStreak % 5 === 0) {
+            kidsLevel++;
+            showKidsFeedback(`Level up! You're getting smarter! 🧠`, '🎊');
+        }
+        
+        setTimeout(() => generateMathQuestion(), 2000);
+    } else {
+        mathStreak = 0;
+        showKidsFeedback(`Not quite! The answer was ${mathQuestion.correctAnswer}`, '🤔', false);
+        setTimeout(() => generateMathQuestion(), 2500);
+    }
+}
+
+// Placeholder functions for other games
+function initWordGame() {
+    const gameArea = document.getElementById('kidsGameArea');
+    gameArea.innerHTML = `
+        <div class="game-instructions">
+            <h3>📝 Word Builder Coming Soon!</h3>
+            <p>This exciting word game is being developed!</p>
+            <button class="kids-control-btn" onclick="goToKidsMenu()">Back to Games</button>
+        </div>
+    `;
+}
+
+function initPuzzleGame() {
+    const gameArea = document.getElementById('kidsGameArea');
+    gameArea.innerHTML = `
+        <div class="game-instructions">
+            <h3>🧩 Shape Puzzle Coming Soon!</h3>
+            <p>This fun puzzle game is being developed!</p>
+            <button class="kids-control-btn" onclick="goToKidsMenu()">Back to Games</button>
+        </div>
+    `;
+}
+
+function initColorGame() {
+    const gameArea = document.getElementById('kidsGameArea');
+    gameArea.innerHTML = `
+        <div class="game-instructions">
+            <h3>🎨 Color Symphony Coming Soon!</h3>
+            <p>This creative color game is being developed!</p>
+            <button class="kids-control-btn" onclick="goToKidsMenu()">Back to Games</button>
+        </div>
+    `;
 }
 
 // Enhanced background effects
