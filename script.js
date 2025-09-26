@@ -2,8 +2,31 @@
 let currentPlayer = 1;
 let gameBoard = Array(6).fill().map(() => Array(7).fill(0));
 let gameMode = 'player'; // 'player' or 'ai'
+let aiDifficulty = 'medium'; // 'easy', 'medium', 'hard'
 let gameEnded = false;
 let scores = { player1: 0, player2: 0 };
+
+// AI Difficulty Settings
+const AI_SETTINGS = {
+    easy: {
+        name: 'Easy',
+        randomMoveChance: 0.7,
+        lookAheadDepth: 1,
+        description: 'Makes mostly random moves'
+    },
+    medium: {
+        name: 'Medium', 
+        randomMoveChance: 0.3,
+        lookAheadDepth: 3,
+        description: 'Strategic with occasional mistakes'
+    },
+    hard: {
+        name: 'Hard',
+        randomMoveChance: 0.05,
+        lookAheadDepth: 6,
+        description: 'Advanced minimax algorithm'
+    }
+};
 
 // Sound State
 let soundEnabled = true;
@@ -206,7 +229,19 @@ function dropPiece(row, col) {
     
     // AI turn if playing against AI
     if (gameMode === 'ai' && currentPlayer === 2) {
-        setTimeout(aiMove, 800);
+        // Show thinking indicator
+        const turnElement = document.getElementById('playerTurn');
+        const originalText = turnElement.querySelector('span').textContent;
+        turnElement.querySelector('span').textContent = 'AI is thinking...';
+        turnElement.querySelector('.turn-piece').style.animation = 'bounce 0.5s infinite';
+        
+        // AI thinking time varies by difficulty
+        const thinkingTime = aiDifficulty === 'easy' ? 500 : 
+                            aiDifficulty === 'medium' ? 1000 : 1500;
+        
+        setTimeout(() => {
+            aiMove();
+        }, thinkingTime);
     }
 }
 
@@ -451,9 +486,11 @@ function updatePlayerTurn() {
     const turnText = turnElement.querySelector('span');
     
     turnPiece.className = `turn-piece player${currentPlayer}`;
-    turnText.textContent = gameMode === 'ai' && currentPlayer === 2 
-        ? "AI's Turn" 
-        : `Player ${currentPlayer}'s Turn`;
+    if (gameMode === 'ai' && currentPlayer === 2) {
+        turnText.textContent = `AI (${AI_SETTINGS[aiDifficulty].name})'s Turn`;
+    } else {
+        turnText.textContent = `Player ${currentPlayer}'s Turn`;
+    }
 }
 
 function updateScores() {
@@ -467,22 +504,41 @@ function resetGame() {
     currentPlayer = 1;
     winningCells = [];
     
+    // Update UI for game mode
+    if (gameMode === 'ai') {
+        document.getElementById('difficultyIndicator').style.display = 'flex';
+        document.getElementById('difficultyBadge').textContent = AI_SETTINGS[aiDifficulty].name;
+        document.getElementById('difficultyBadge').className = `difficulty-badge ${aiDifficulty}`;
+        document.getElementById('player2Label').textContent = 'AI';
+    } else {
+        document.getElementById('difficultyIndicator').style.display = 'none';
+        document.getElementById('player2Label').textContent = 'Player 2';
+    }
+    
     createBoard();
     updatePlayerTurn();
     hideWinOverlay();
 }
 
-function startGame(mode) {
+function startGame(mode, difficulty = 'medium') {
     gameMode = mode;
+    aiDifficulty = difficulty;
     playClickSound();
     
     // Animate menu exit
     const menu = document.getElementById('gameMenu');
-    menu.style.transform = 'scale(0.8)';
-    menu.style.opacity = '0';
+    const difficultyMenu = document.getElementById('difficultyMenu');
+    
+    [menu, difficultyMenu].forEach(element => {
+        if (element.style.display !== 'none') {
+            element.style.transform = 'scale(0.8)';
+            element.style.opacity = '0';
+        }
+    });
     
     setTimeout(() => {
         menu.style.display = 'none';
+        difficultyMenu.style.display = 'none';
         document.getElementById('gameContainer').style.display = 'flex';
         
         // Animate game entrance
@@ -497,6 +553,52 @@ function startGame(mode) {
         }, 50);
         
         resetGame();
+    }, 300);
+}
+
+function showDifficultyMenu() {
+    playClickSound();
+    
+    const mainMenu = document.getElementById('gameMenu');
+    const difficultyMenu = document.getElementById('difficultyMenu');
+    
+    // Animate main menu exit
+    mainMenu.style.transform = 'scale(0.8)';
+    mainMenu.style.opacity = '0';
+    
+    setTimeout(() => {
+        mainMenu.style.display = 'none';
+        difficultyMenu.style.display = 'flex';
+        
+        // Animate difficulty menu entrance
+        setTimeout(() => {
+            difficultyMenu.style.transform = 'scale(1)';
+            difficultyMenu.style.opacity = '1';
+            difficultyMenu.style.transition = 'all 0.5s ease';
+        }, 50);
+    }, 300);
+}
+
+function goToMainMenu() {
+    playClickSound();
+    
+    const difficultyMenu = document.getElementById('difficultyMenu');
+    const mainMenu = document.getElementById('gameMenu');
+    
+    // Animate difficulty menu exit
+    difficultyMenu.style.transform = 'scale(0.8)';
+    difficultyMenu.style.opacity = '0';
+    
+    setTimeout(() => {
+        difficultyMenu.style.display = 'none';
+        mainMenu.style.display = 'flex';
+        
+        // Animate main menu entrance
+        setTimeout(() => {
+            mainMenu.style.transform = 'scale(1)';
+            mainMenu.style.opacity = '1';
+            mainMenu.style.transition = 'all 0.5s ease';
+        }, 50);
     }, 300);
 }
 
@@ -517,6 +619,7 @@ function goToMenu() {
     setTimeout(() => {
         gameContainer.style.display = 'none';
         mazeGame.style.display = 'none';
+        document.getElementById('difficultyMenu').style.display = 'none';
         
         const menu = document.getElementById('gameMenu');
         menu.style.display = 'flex';
@@ -580,58 +683,303 @@ function createAuroraWave() {
     }, 8000);
 }
 
-// AI Logic
+// Enhanced AI Logic with Difficulty Levels
 function aiMove() {
     if (gameEnded) return;
     
-    // Simple AI: Try to win, block player, or random move
+    const settings = AI_SETTINGS[aiDifficulty];
     let bestCol = -1;
     
-    // Try to win
-    for (let col = 0; col < 7; col++) {
-        const row = getLowestEmptyRow(col);
-        if (row !== -1) {
-            gameBoard[row][col] = 2;
-            if (checkWin(row, col)) {
-                gameBoard[row][col] = 0;
-                bestCol = col;
-                break;
-            }
-            gameBoard[row][col] = 0;
+    // Random move chance based on difficulty
+    if (Math.random() < settings.randomMoveChance) {
+        bestCol = getRandomMove();
+    } else {
+        // Strategic move using minimax or simple strategy
+        if (aiDifficulty === 'hard') {
+            bestCol = getMinimaxMove(settings.lookAheadDepth);
+        } else {
+            bestCol = getStrategicMove();
         }
     }
     
-    // Try to block player
+    // Fallback to random if no strategic move found
     if (bestCol === -1) {
-        for (let col = 0; col < 7; col++) {
-            const row = getLowestEmptyRow(col);
-            if (row !== -1) {
-                gameBoard[row][col] = 1;
-                if (checkWin(row, col)) {
-                    gameBoard[row][col] = 0;
-                    bestCol = col;
-                    break;
-                }
-                gameBoard[row][col] = 0;
-            }
-        }
-    }
-    
-    // Random move
-    if (bestCol === -1) {
-        const availableCols = [];
-        for (let col = 0; col < 7; col++) {
-            if (getLowestEmptyRow(col) !== -1) {
-                availableCols.push(col);
-            }
-        }
-        bestCol = availableCols[Math.floor(Math.random() * availableCols.length)];
+        bestCol = getRandomMove();
     }
     
     if (bestCol !== -1) {
         const row = getLowestEmptyRow(bestCol);
         dropPiece(row, bestCol);
     }
+}
+
+function getRandomMove() {
+    const availableCols = [];
+    for (let col = 0; col < 7; col++) {
+        if (getLowestEmptyRow(col) !== -1) {
+            availableCols.push(col);
+        }
+    }
+    return availableCols.length > 0 
+        ? availableCols[Math.floor(Math.random() * availableCols.length)] 
+        : -1;
+}
+
+function getStrategicMove() {
+    // Priority 1: Try to win
+    for (let col = 0; col < 7; col++) {
+        const row = getLowestEmptyRow(col);
+        if (row !== -1) {
+            gameBoard[row][col] = 2;
+            if (checkWinForPlayer(row, col, 2)) {
+                gameBoard[row][col] = 0;
+                return col;
+            }
+            gameBoard[row][col] = 0;
+        }
+    }
+    
+    // Priority 2: Block player from winning
+    for (let col = 0; col < 7; col++) {
+        const row = getLowestEmptyRow(col);
+        if (row !== -1) {
+            gameBoard[row][col] = 1;
+            if (checkWinForPlayer(row, col, 1)) {
+                gameBoard[row][col] = 0;
+                return col;
+            }
+            gameBoard[row][col] = 0;
+        }
+    }
+    
+    // Priority 3: Look for opportunities to create threats
+    if (aiDifficulty === 'medium') {
+        for (let col = 0; col < 7; col++) {
+            const row = getLowestEmptyRow(col);
+            if (row !== -1) {
+                const score = evaluatePosition(row, col, 2);
+                if (score > 5) {
+                    return col;
+                }
+            }
+        }
+    }
+    
+    // Priority 4: Play center columns (good strategy)
+    const centerCols = [3, 2, 4, 1, 5, 0, 6];
+    for (let col of centerCols) {
+        if (getLowestEmptyRow(col) !== -1) {
+            return col;
+        }
+    }
+    
+    return -1;
+}
+
+function getMinimaxMove(depth) {
+    let bestScore = -Infinity;
+    let bestCol = -1;
+    
+    for (let col = 0; col < 7; col++) {
+        const row = getLowestEmptyRow(col);
+        if (row !== -1) {
+            gameBoard[row][col] = 2;
+            const score = minimax(depth - 1, false, -Infinity, Infinity);
+            gameBoard[row][col] = 0;
+            
+            if (score > bestScore) {
+                bestScore = score;
+                bestCol = col;
+            }
+        }
+    }
+    
+    return bestCol;
+}
+
+function minimax(depth, isMaximizing, alpha, beta) {
+    // Check for terminal states
+    for (let col = 0; col < 7; col++) {
+        for (let row = 0; row < 6; row++) {
+            if (gameBoard[row][col] !== 0) {
+                if (checkWinForPlayer(row, col, 2)) return 1000 + depth;
+                if (checkWinForPlayer(row, col, 1)) return -1000 - depth;
+            }
+        }
+    }
+    
+    if (depth === 0 || isBoardFull()) {
+        return evaluateBoard();
+    }
+    
+    if (isMaximizing) {
+        let maxScore = -Infinity;
+        for (let col = 0; col < 7; col++) {
+            const row = getLowestEmptyRow(col);
+            if (row !== -1) {
+                gameBoard[row][col] = 2;
+                const score = minimax(depth - 1, false, alpha, beta);
+                gameBoard[row][col] = 0;
+                maxScore = Math.max(score, maxScore);
+                alpha = Math.max(alpha, score);
+                if (beta <= alpha) break; // Alpha-beta pruning
+            }
+        }
+        return maxScore;
+    } else {
+        let minScore = Infinity;
+        for (let col = 0; col < 7; col++) {
+            const row = getLowestEmptyRow(col);
+            if (row !== -1) {
+                gameBoard[row][col] = 1;
+                const score = minimax(depth - 1, true, alpha, beta);
+                gameBoard[row][col] = 0;
+                minScore = Math.min(score, minScore);
+                beta = Math.min(beta, score);
+                if (beta <= alpha) break; // Alpha-beta pruning
+            }
+        }
+        return minScore;
+    }
+}
+
+function evaluateBoard() {
+    let score = 0;
+    
+    // Evaluate all possible 4-in-a-row combinations
+    for (let row = 0; row < 6; row++) {
+        for (let col = 0; col < 7; col++) {
+            if (gameBoard[row][col] !== 0) {
+                // Horizontal
+                if (col <= 3) {
+                    score += evaluateLine([
+                        gameBoard[row][col],
+                        gameBoard[row][col + 1],
+                        gameBoard[row][col + 2],
+                        gameBoard[row][col + 3]
+                    ]);
+                }
+                
+                // Vertical
+                if (row <= 2) {
+                    score += evaluateLine([
+                        gameBoard[row][col],
+                        gameBoard[row + 1][col],
+                        gameBoard[row + 2][col],
+                        gameBoard[row + 3][col]
+                    ]);
+                }
+                
+                // Diagonal \
+                if (row <= 2 && col <= 3) {
+                    score += evaluateLine([
+                        gameBoard[row][col],
+                        gameBoard[row + 1][col + 1],
+                        gameBoard[row + 2][col + 2],
+                        gameBoard[row + 3][col + 3]
+                    ]);
+                }
+                
+                // Diagonal /
+                if (row >= 3 && col <= 3) {
+                    score += evaluateLine([
+                        gameBoard[row][col],
+                        gameBoard[row - 1][col + 1],
+                        gameBoard[row - 2][col + 2],
+                        gameBoard[row - 3][col + 3]
+                    ]);
+                }
+            }
+        }
+    }
+    
+    return score;
+}
+
+function evaluateLine(line) {
+    let aiCount = 0;
+    let playerCount = 0;
+    let empty = 0;
+    
+    for (let cell of line) {
+        if (cell === 2) aiCount++;
+        else if (cell === 1) playerCount++;
+        else empty++;
+    }
+    
+    // If both players have pieces in the line, it's not useful
+    if (aiCount > 0 && playerCount > 0) return 0;
+    
+    if (aiCount === 4) return 1000;
+    if (aiCount === 3 && empty === 1) return 10;
+    if (aiCount === 2 && empty === 2) return 2;
+    if (aiCount === 1 && empty === 3) return 1;
+    
+    if (playerCount === 4) return -1000;
+    if (playerCount === 3 && empty === 1) return -10;
+    if (playerCount === 2 && empty === 2) return -2;
+    if (playerCount === 1 && empty === 3) return -1;
+    
+    return 0;
+}
+
+function evaluatePosition(row, col, player) {
+    let score = 0;
+    const directions = [
+        [[0, 1], [0, -1]], // Horizontal
+        [[1, 0], [-1, 0]], // Vertical
+        [[1, 1], [-1, -1]], // Diagonal /
+        [[1, -1], [-1, 1]]  // Diagonal \
+    ];
+    
+    for (let direction of directions) {
+        let count = 1;
+        for (let [dx, dy] of direction) {
+            let newRow = row + dx;
+            let newCol = col + dy;
+            while (newRow >= 0 && newRow < 6 && newCol >= 0 && newCol < 7 && 
+                   gameBoard[newRow][newCol] === player) {
+                count++;
+                newRow += dx;
+                newCol += dy;
+            }
+        }
+        score += count * count;
+    }
+    
+    return score;
+}
+
+function checkWinForPlayer(row, col, player) {
+    const directions = [
+        [[0, 1], [0, -1]], // Horizontal
+        [[1, 0], [-1, 0]], // Vertical
+        [[1, 1], [-1, -1]], // Diagonal /
+        [[1, -1], [-1, 1]]  // Diagonal \
+    ];
+    
+    for (let direction of directions) {
+        let count = 1;
+        
+        for (let [dx, dy] of direction) {
+            let newRow = row + dx;
+            let newCol = col + dy;
+            
+            while (newRow >= 0 && newRow < 6 && newCol >= 0 && newCol < 7 && 
+                   gameBoard[newRow][newCol] === player) {
+                count++;
+                newRow += dx;
+                newCol += dy;
+            }
+        }
+        
+        if (count >= 4) return true;
+    }
+    return false;
+}
+
+function isBoardFull() {
+    return gameBoard[0].every(cell => cell !== 0);
 }
 
 // Maze Game Functions

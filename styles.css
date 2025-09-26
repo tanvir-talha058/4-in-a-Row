@@ -189,7 +189,7 @@ body {
 }
 
 /* Menu Styles */
-.game-menu {
+.game-menu, .difficulty-menu {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -205,6 +205,7 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
     animation: slideInUp 0.8s ease-out;
+    min-width: 400px;
 }
 
 .menu-content h2 {
@@ -214,10 +215,20 @@ body {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+.difficulty-info {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+}
+
+.difficulty-info p {
+    margin: 0;
+}
+
 .menu-btn {
     position: relative;
     display: block;
-    width: 250px;
+    width: 300px;
     padding: 1rem 2rem;
     margin: 1rem auto;
     background: linear-gradient(135deg, #667eea, #764ba2);
@@ -228,7 +239,7 @@ body {
     font-weight: bold;
     cursor: pointer;
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     animation: menuButtonFloat 4s ease-in-out infinite;
 }
@@ -236,6 +247,7 @@ body {
 .menu-btn:nth-child(2) { animation-delay: 0.5s; }
 .menu-btn:nth-child(3) { animation-delay: 1s; }
 .menu-btn:nth-child(4) { animation-delay: 1.5s; }
+.menu-btn:nth-child(5) { animation-delay: 2s; }
 
 .menu-btn:hover {
     transform: translateY(-5px) scale(1.05);
@@ -246,6 +258,51 @@ body {
 .menu-btn:active {
     transform: translateY(-3px) scale(1.02);
     animation: menuButtonPress 0.2s ease-out;
+}
+
+/* Difficulty-specific button styles */
+.difficulty-easy {
+    background: linear-gradient(135deg, #27ae60, #2ecc71) !important;
+}
+
+.difficulty-easy:hover {
+    background: linear-gradient(135deg, #2ecc71, #27ae60) !important;
+    box-shadow: 0 0 30px rgba(39, 174, 96, 0.6);
+}
+
+.difficulty-medium {
+    background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+}
+
+.difficulty-medium:hover {
+    background: linear-gradient(135deg, #e67e22, #f39c12) !important;
+    box-shadow: 0 0 30px rgba(243, 156, 18, 0.6);
+}
+
+.difficulty-hard {
+    background: linear-gradient(135deg, #e74c3c, #c0392b) !important;
+}
+
+.difficulty-hard:hover {
+    background: linear-gradient(135deg, #c0392b, #e74c3c) !important;
+    box-shadow: 0 0 30px rgba(231, 76, 60, 0.6);
+}
+
+.back-btn {
+    background: linear-gradient(135deg, #7f8c8d, #95a5a6) !important;
+    width: 200px !important;
+    margin-top: 2rem !important;
+}
+
+.back-btn:hover {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d) !important;
+}
+
+.btn-subtitle {
+    font-size: 0.8rem;
+    opacity: 0.9;
+    margin-top: 0.3rem;
+    font-weight: normal;
 }
 
 @keyframes menuButtonFloat {
@@ -346,6 +403,54 @@ body {
     font-size: 1.5rem;
     font-weight: bold;
     margin-top: 0.2rem;
+}
+
+/* Difficulty Indicator */
+.difficulty-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.difficulty-label {
+    opacity: 0.8;
+}
+
+.difficulty-badge {
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    animation: difficultyPulse 2s ease-in-out infinite;
+}
+
+.difficulty-badge.easy {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    box-shadow: 0 0 15px rgba(39, 174, 96, 0.4);
+}
+
+.difficulty-badge.medium {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    box-shadow: 0 0 15px rgba(243, 156, 18, 0.4);
+}
+
+.difficulty-badge.hard {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    box-shadow: 0 0 15px rgba(231, 76, 60, 0.4);
+}
+
+@keyframes difficultyPulse {
+    0%, 100% { 
+        transform: scale(1);
+        opacity: 0.9;
+    }
+    50% { 
+        transform: scale(1.05);
+        opacity: 1;
+    }
 }
 
 @keyframes bounce {

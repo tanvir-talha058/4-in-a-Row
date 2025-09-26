@@ -33,12 +33,40 @@
                     <span class="btn-text">Player vs Player</span>
                     <div class="btn-glow"></div>
                 </button>
-                <button class="menu-btn" onclick="startGame('ai')">
+                <button class="menu-btn" onclick="showDifficultyMenu()">
                     <span class="btn-text">Player vs AI</span>
                     <div class="btn-glow"></div>
                 </button>
                 <button class="menu-btn" onclick="showMazeGame()">
                     <span class="btn-text">Maze Rivals</span>
+                    <div class="btn-glow"></div>
+                </button>
+            </div>
+        </div>
+
+        <div class="difficulty-menu" id="difficultyMenu" style="display: none;">
+            <div class="menu-content">
+                <h2>Select Difficulty</h2>
+                <div class="difficulty-info">
+                    <p>Choose your AI opponent's intelligence level</p>
+                </div>
+                <button class="menu-btn difficulty-easy" onclick="startGame('ai', 'easy')">
+                    <span class="btn-text">🟢 Easy</span>
+                    <div class="btn-subtitle">Random moves, beginner friendly</div>
+                    <div class="btn-glow"></div>
+                </button>
+                <button class="menu-btn difficulty-medium" onclick="startGame('ai', 'medium')">
+                    <span class="btn-text">🟡 Medium</span>
+                    <div class="btn-subtitle">Strategic play with some mistakes</div>
+                    <div class="btn-glow"></div>
+                </button>
+                <button class="menu-btn difficulty-hard" onclick="startGame('ai', 'hard')">
+                    <span class="btn-text">🔴 Hard</span>
+                    <div class="btn-subtitle">Advanced AI with minimax algorithm</div>
+                    <div class="btn-glow"></div>
+                </button>
+                <button class="menu-btn back-btn" onclick="goToMainMenu()">
+                    <span class="btn-text">← Back</span>
                     <div class="btn-glow"></div>
                 </button>
             </div>
@@ -51,13 +79,17 @@
                         <div class="turn-piece player1"></div>
                         <span>Player 1's Turn</span>
                     </div>
+                    <div class="difficulty-indicator" id="difficultyIndicator" style="display: none;">
+                        <span class="difficulty-label">AI Difficulty:</span>
+                        <span class="difficulty-badge" id="difficultyBadge">Medium</span>
+                    </div>
                     <div class="score-display">
                         <div class="score">
                             <span class="score-label">Player 1</span>
                             <span class="score-value" id="player1Score">0</span>
                         </div>
                         <div class="score">
-                            <span class="score-label">Player 2</span>
+                            <span class="score-label" id="player2Label">Player 2</span>
                             <span class="score-value" id="player2Score">0</span>
                         </div>
                     </div>
