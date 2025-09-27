@@ -22,9 +22,9 @@ const AI_SETTINGS = {
     },
     hard: {
         name: 'Hard',
-        randomMoveChance: 0.05,
-        lookAheadDepth: 6,
-        description: 'Advanced minimax algorithm'
+        randomMoveChance: 0.0,
+        lookAheadDepth: 7, // Increased depth for stronger AI
+        description: 'Advanced minimax algorithm with deeper search and improved evaluation'
     }
 };
 
@@ -1310,7 +1310,14 @@ function minimax(depth, isMaximizing, alpha, beta) {
 
 function evaluateBoard() {
     let score = 0;
-    
+    // Center column preference (encourage AI to play center)
+    const centerCol = 3;
+    let centerCount = 0;
+    for (let row = 0; row < 6; row++) {
+        if (gameBoard[row][centerCol] === 2) centerCount++;
+    }
+    score += centerCount * 4;
+
     // Evaluate all possible 4-in-a-row combinations
     for (let row = 0; row < 6; row++) {
         for (let col = 0; col < 7; col++) {
@@ -1322,9 +1329,8 @@ function evaluateBoard() {
                         gameBoard[row][col + 1],
                         gameBoard[row][col + 2],
                         gameBoard[row][col + 3]
-                    ]);
+                    ], row, col, 0, 1);
                 }
-                
                 // Vertical
                 if (row <= 2) {
                     score += evaluateLine([
@@ -1332,9 +1338,8 @@ function evaluateBoard() {
                         gameBoard[row + 1][col],
                         gameBoard[row + 2][col],
                         gameBoard[row + 3][col]
-                    ]);
+                    ], row, col, 1, 0);
                 }
-                
                 // Diagonal \
                 if (row <= 2 && col <= 3) {
                     score += evaluateLine([
@@ -1342,9 +1347,8 @@ function evaluateBoard() {
                         gameBoard[row + 1][col + 1],
                         gameBoard[row + 2][col + 2],
                         gameBoard[row + 3][col + 3]
-                    ]);
+                    ], row, col, 1, 1);
                 }
-                
                 // Diagonal /
                 if (row >= 3 && col <= 3) {
                     score += evaluateLine([
@@ -1352,39 +1356,55 @@ function evaluateBoard() {
                         gameBoard[row - 1][col + 1],
                         gameBoard[row - 2][col + 2],
                         gameBoard[row - 3][col + 3]
-                    ]);
+                    ], row, col, -1, 1);
                 }
             }
         }
     }
-    
     return score;
 }
 
-function evaluateLine(line) {
+function evaluateLine(line, row, col, dRow, dCol) {
     let aiCount = 0;
     let playerCount = 0;
     let empty = 0;
-    
-    for (let cell of line) {
-        if (cell === 2) aiCount++;
-        else if (cell === 1) playerCount++;
-        else empty++;
+    let emptyIndex = -1;
+    for (let i = 0; i < 4; i++) {
+        if (line[i] === 2) aiCount++;
+        else if (line[i] === 1) playerCount++;
+        else {
+            empty++;
+            emptyIndex = i;
+        }
     }
-    
     // If both players have pieces in the line, it's not useful
     if (aiCount > 0 && playerCount > 0) return 0;
-    
-    if (aiCount === 4) return 1000;
-    if (aiCount === 3 && empty === 1) return 10;
-    if (aiCount === 2 && empty === 2) return 2;
+    // Win/loss
+    if (aiCount === 4) return 10000;
+    if (playerCount === 4) return -10000;
+    // Block opponent's 3-in-a-row with open end
+    if (playerCount === 3 && empty === 1) {
+        // If the empty cell is playable (lowest empty in that column)
+        let eRow = row + dRow * emptyIndex;
+        let eCol = col + dCol * emptyIndex;
+        if (eRow === 5 || (eRow < 5 && gameBoard[eRow + 1][eCol] !== 0)) {
+            return -1000;
+        }
+        return -10;
+    }
+    // AI 3-in-a-row with open end
+    if (aiCount === 3 && empty === 1) {
+        let eRow = row + dRow * emptyIndex;
+        let eCol = col + dCol * emptyIndex;
+        if (eRow === 5 || (eRow < 5 && gameBoard[eRow + 1][eCol] !== 0)) {
+            return 1000;
+        }
+        return 10;
+    }
+    if (aiCount === 2 && empty === 2) return 5;
+    if (playerCount === 2 && empty === 2) return -5;
     if (aiCount === 1 && empty === 3) return 1;
-    
-    if (playerCount === 4) return -1000;
-    if (playerCount === 3 && empty === 1) return -10;
-    if (playerCount === 2 && empty === 2) return -2;
     if (playerCount === 1 && empty === 3) return -1;
-    
     return 0;
 }
 
