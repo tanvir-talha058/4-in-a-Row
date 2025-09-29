@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>4-in-a-Row - Animated Edition</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/enhanced-styles.css">
 </head>
 <body>
     <div class="container">
@@ -21,30 +22,26 @@
 
         <!-- Sound Controls -->
         <div class="sound-controls">
-            <button class="sound-btn" id="soundToggle" onclick="toggleSound()">
+            <button class="sound-btn" id="soundToggle" title="Toggle Sound">
                 <span id="soundIcon">🔊</span>
             </button>
         </div>
 
-        <div class="game-menu" id="gameMenu">
+        <!-- Main Menu -->
+        <div class="game-menu" id="mainMenu">
             <div class="menu-content">
                 <h2>Select Game Mode</h2>
-                <button class="menu-btn" onclick="startGame('player')">
+                <button class="menu-btn" id="showConnect4">
                     <span class="btn-text">🔴 Connect 4</span>
                     <div class="btn-subtitle">Classic strategy game</div>
                     <div class="btn-glow"></div>
                 </button>
-                <button class="menu-btn" onclick="showDifficultyMenu()">
-                    <span class="btn-text">🤖 AI Challenge</span>
-                    <div class="btn-subtitle">Play against smart AI</div>
-                    <div class="btn-glow"></div>
-                </button>
-                <button class="menu-btn" onclick="showKidsGamesMenu()">
+                <button class="menu-btn" id="showKidsGames">
                     <span class="btn-text">🧠 Brain Games for Kids</span>
                     <div class="btn-subtitle">Educational & fun learning games</div>
                     <div class="btn-glow"></div>
                 </button>
-                <button class="menu-btn" onclick="showMazeGame()">
+                <button class="menu-btn" id="showMaze">
                     <span class="btn-text">🏃 Maze Rivals</span>
                     <div class="btn-subtitle">Adventure maze game</div>
                     <div class="btn-glow"></div>
@@ -52,13 +49,14 @@
             </div>
         </div>
 
+        <!-- Kids Games Menu -->
         <div class="kids-games-menu" id="kidsGamesMenu" style="display: none;">
             <div class="menu-content kids-menu">
                 <h2>🎓 Brain Development Games</h2>
                 <div class="games-subtitle">Fun games to boost cognitive skills!</div>
                 
                 <div class="games-grid">
-                    <button class="game-card memory-game" onclick="startKidsGame('memory')">
+                    <button class="game-card memory-game" onclick="gameController.showKidsGame('memoryMatch')">
                         <div class="game-icon">🧩</div>
                         <div class="game-title">Memory Match</div>
                         <div class="game-desc">Match pairs to improve memory</div>
@@ -68,7 +66,7 @@
                         </div>
                     </button>
 
-                    <button class="game-card pattern-game" onclick="startKidsGame('pattern')">
+                    <button class="game-card pattern-game" onclick="gameController.showKidsGame('patternMaster')">
                         <div class="game-icon">🌈</div>
                         <div class="game-title">Pattern Master</div>
                         <div class="game-desc">Follow and repeat color sequences</div>
@@ -78,7 +76,7 @@
                         </div>
                     </button>
 
-                    <button class="game-card math-game" onclick="startKidsGame('math')">
+                    <button class="game-card math-game" onclick="gameController.showKidsGame('mathAdventure')">
                         <div class="game-icon">🔢</div>
                         <div class="game-title">Math Adventure</div>
                         <div class="game-desc">Fun arithmetic with rewards</div>
@@ -88,7 +86,7 @@
                         </div>
                     </button>
 
-                    <button class="game-card word-game" onclick="startKidsGame('word')">
+                    <button class="game-card word-game" onclick="gameController.showKidsGame('wordBuilder')">
                         <div class="game-icon">📝</div>
                         <div class="game-title">Word Builder</div>
                         <div class="game-desc">Create words from letters</div>
@@ -98,7 +96,7 @@
                         </div>
                     </button>
 
-                    <button class="game-card puzzle-game" onclick="startKidsGame('puzzle')">
+                    <button class="game-card puzzle-game" onclick="gameController.showKidsGame('shapePuzzle')">
                         <div class="game-icon">🧩</div>
                         <div class="game-title">Shape Puzzle</div>
                         <div class="game-desc">Fit shapes into correct spots</div>
@@ -108,7 +106,7 @@
                         </div>
                     </button>
 
-                    <button class="game-card color-game" onclick="startKidsGame('color')">
+                    <button class="game-card color-game" onclick="gameController.showKidsGame('colorSymphony')">
                         <div class="game-icon">🎨</div>
                         <div class="game-title">Color Symphony</div>
                         <div class="game-desc">Learn colors and combinations</div>
@@ -119,7 +117,7 @@
                     </button>
                 </div>
 
-                <button class="menu-btn back-btn" onclick="goToMainMenu()">
+                <button class="menu-btn back-btn" id="backToMain">
                     <span class="btn-text">← Back to Main Menu</span>
                     <div class="btn-glow"></div>
                 </button>
@@ -186,16 +184,23 @@
             </div>
         </div>
 
-        <div class="game-container" id="gameContainer" style="display: none;">
+        <!-- Connect 4 Game Container -->
+        <div class="game-container" id="connect4Game" style="display: none;">
             <div class="game-info">
                 <div class="player-indicator">
-                    <div class="player-turn" id="playerTurn">
-                        <div class="turn-piece player1"></div>
-                        <span>Player 1's Turn</span>
+                    <div class="player-turn" id="currentTurn">
+                        Player 1's Turn
                     </div>
-                    <div class="difficulty-indicator" id="difficultyIndicator" style="display: none;">
-                        <span class="difficulty-label">AI Difficulty:</span>
-                        <span class="difficulty-badge" id="difficultyBadge">Medium</span>
+                    <div class="difficulty-controls">
+                        <div class="mode-buttons">
+                            <button class="control-btn" id="playerMode">👥 Players</button>
+                            <button class="control-btn active" id="aiMode">🤖 vs AI</button>
+                        </div>
+                        <div class="difficulty-buttons">
+                            <button class="control-btn" id="easyDifficulty">Easy</button>
+                            <button class="control-btn active" id="mediumDifficulty">Medium</button>
+                            <button class="control-btn" id="hardDifficulty">Hard</button>
+                        </div>
                     </div>
                     <div class="score-display">
                         <div class="score">
@@ -220,12 +225,99 @@
             </div>
 
             <div class="game-controls">
-                <button class="control-btn" onclick="resetGame()">
-                    <span>New Game</span>
+                <button class="control-btn" id="resetGame">
+                    <span>🔄 New Game</span>
                 </button>
-                <button class="control-btn" onclick="goToMenu()">
-                    <span>Menu</span>
+                <button class="control-btn" id="backToMain">
+                    <span>🏠 Main Menu</span>
                 </button>
+            </div>
+            
+            <div class="game-message" id="gameMessage"></div>
+        </div>
+
+        <!-- Memory Match Game -->
+        <div class="kids-game-container" id="memoryMatchGame" style="display: none;">
+            <div class="kids-game-header">
+                <h2>🧩 Memory Match</h2>
+                <div class="kids-score">Score: <span id="kidsScore">0</span></div>
+                <button class="back-btn" id="backToKidsMenu">← Back to Games</button>
+            </div>
+            <div class="memory-grid">
+                <!-- Cards will be generated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Pattern Master Game -->
+        <div class="kids-game-container" id="patternMasterGame" style="display: none;">
+            <div class="kids-game-header">
+                <h2>🌈 Pattern Master</h2>
+                <div class="kids-score">Score: <span id="kidsScore">0</span></div>
+                <button class="back-btn" id="backToKidsMenu">← Back to Games</button>
+            </div>
+            <div class="pattern-display">
+                <div class="pattern-buttons">
+                    <button class="pattern-button" data-color="red"></button>
+                    <button class="pattern-button" data-color="blue"></button>
+                    <button class="pattern-button" data-color="green"></button>
+                    <button class="pattern-button" data-color="yellow"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Math Adventure Game -->
+        <div class="kids-game-container" id="mathAdventureGame" style="display: none;">
+            <div class="kids-game-header">
+                <h2>🔢 Math Adventure</h2>
+                <div class="kids-score">Score: <span id="kidsScore">0</span></div>
+                <button class="back-btn" id="backToKidsMenu">← Back to Games</button>
+            </div>
+            <div class="math-problem">
+                <div class="math-question">5 + 3 = ?</div>
+                <input type="number" class="math-answer" placeholder="Your answer">
+                <button class="math-submit">Submit</button>
+            </div>
+        </div>
+
+        <!-- Word Builder Game -->
+        <div class="kids-game-container" id="wordBuilderGame" style="display: none;">
+            <div class="kids-game-header">
+                <h2>📝 Word Builder</h2>
+                <div class="kids-score">Score: <span id="kidsScore">0</span></div>
+                <button class="back-btn" id="backToKidsMenu">← Back to Games</button>
+            </div>
+            <div class="coming-soon">
+                <div class="coming-soon-icon">🚧</div>
+                <div class="coming-soon-text">Coming Soon!</div>
+                <div class="coming-soon-desc">This exciting word game is being developed!</div>
+            </div>
+        </div>
+
+        <!-- Shape Puzzle Game -->
+        <div class="kids-game-container" id="shapePuzzleGame" style="display: none;">
+            <div class="kids-game-header">
+                <h2>🧩 Shape Puzzle</h2>
+                <div class="kids-score">Score: <span id="kidsScore">0</span></div>
+                <button class="back-btn" id="backToKidsMenu">← Back to Games</button>
+            </div>
+            <div class="coming-soon">
+                <div class="coming-soon-icon">🚧</div>
+                <div class="coming-soon-text">Coming Soon!</div>
+                <div class="coming-soon-desc">This exciting puzzle game is being developed!</div>
+            </div>
+        </div>
+
+        <!-- Color Symphony Game -->
+        <div class="kids-game-container" id="colorSymphonyGame" style="display: none;">
+            <div class="kids-game-header">
+                <h2>🎨 Color Symphony</h2>
+                <div class="kids-score">Score: <span id="kidsScore">0</span></div>
+                <button class="back-btn" id="backToKidsMenu">← Back to Games</button>
+            </div>
+            <div class="coming-soon">
+                <div class="coming-soon-icon">🚧</div>
+                <div class="coming-soon-text">Coming Soon!</div>
+                <div class="coming-soon-desc">This creative color game is being developed!</div>
             </div>
         </div>
 
@@ -271,6 +363,11 @@
         <audio id="connectionSound"></audio>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Refined Modular Scripts -->
+    <script src="js/game-state.js"></script>
+    <script src="js/audio-system.js"></script>
+    <script src="js/visual-effects.js"></script>
+    <script src="js/connect4-game.js"></script>
+    <script src="js/game-controller.js"></script>
 </body>
 </html>
