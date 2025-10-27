@@ -67,14 +67,15 @@ class GameState {
             memory: {
                 cards: [],
                 flippedCards: [],
-                matchedPairs: 0
+                matchedPairs: 0,
+                totalPairs: 0
             },
             
-            // Pattern Game
+            // Pattern Game (Simon)
             pattern: {
                 sequence: [],
                 playerSequence: [],
-                step: 0,
+                currentStep: 0,
                 isShowing: false
             },
             
@@ -84,11 +85,14 @@ class GameState {
                 streak: 0
             },
             
-            // Word Game
+            // Word Game (Scramble)
             word: {
                 currentWord: '',
+                scrambledWord: '',
                 letters: [],
-                foundWords: []
+                foundWords: [],
+                attempts: 0,
+                maxAttempts: 3
             }
         };
     }
@@ -124,14 +128,15 @@ class GameState {
                 this.kidsGames.memory = {
                     cards: [],
                     flippedCards: [],
-                    matchedPairs: 0
+                    matchedPairs: 0,
+                    totalPairs: 0
                 };
                 break;
             case 'pattern':
                 this.kidsGames.pattern = {
                     sequence: [],
                     playerSequence: [],
-                    step: 0,
+                    currentStep: 0,
                     isShowing: false
                 };
                 break;
@@ -144,8 +149,11 @@ class GameState {
             case 'word':
                 this.kidsGames.word = {
                     currentWord: '',
+                    scrambledWord: '',
                     letters: [],
-                    foundWords: []
+                    foundWords: [],
+                    attempts: 0,
+                    maxAttempts: 3
                 };
                 break;
         }

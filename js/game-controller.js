@@ -51,6 +51,9 @@ class GameController {
         
         // Initialize Connect 4 game
         this.connect4Game = new Connect4Game(this.gameState, this.audioSystem);
+        
+        // Initialize Kids Games Manager
+        this.kidsGamesManager = new KidsGamesManager(this.gameState, this.audioSystem, this.visualEffects);
     }
 
     setupGlobalEventListeners() {
@@ -169,6 +172,8 @@ class GameController {
             'mazeGame', 
             'kidsGamesMenu',
             'memoryMatchGame',
+            'simonGame',
+            'wordScrambleGame',
             'patternMasterGame',
             'mathAdventureGame',
             'wordBuilderGame',
@@ -233,7 +238,13 @@ class GameController {
         
         switch (gameType) {
             case 'memoryMatch':
-                this.initializeMemoryGame();
+                this.kidsGamesManager.initializeMemoryMatch();
+                break;
+            case 'simonGame':
+                this.kidsGamesManager.initializeSimonGame();
+                break;
+            case 'wordScramble':
+                this.kidsGamesManager.initializeWordScramble();
                 break;
             case 'patternMaster':
                 this.initializePatternGame();
