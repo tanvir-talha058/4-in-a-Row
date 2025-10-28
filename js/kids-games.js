@@ -8,12 +8,14 @@ class KidsGamesManager {
         this.state = gameState;
         this.audio = audioSystem;
         this.effects = visualEffects;
+        this.domCache = PerformanceUtils.createDOMCache();
+        this.throttledUpdate = PerformanceUtils.throttle(() => this.updateKidsScore(), 100);
     }
 
     // ==================== MEMORY MATCH GAME ====================
     
     initializeMemoryMatch() {
-        const gameContainer = document.getElementById('memoryMatchGame');
+        const gameContainer = this.domCache.get('#memoryMatchGame');
         if (!gameContainer) return;
 
         const gridContainer = gameContainer.querySelector('.memory-grid');
@@ -31,7 +33,9 @@ class KidsGamesManager {
         const symbols = allSymbols.slice(0, pairCount);
         const cards = [...symbols, ...symbols].sort(() => Math.random() - 0.5);
         
-        gridContainer.innerHTML = '';
+        // Use DocumentFragment for better performance
+        const fragment = document.createDocumentFragment();
+        
         gridContainer.className = `memory-grid grid-${pairCount * 2}`;
         
         cards.forEach((symbol, index) => {
@@ -47,13 +51,16 @@ class KidsGamesManager {
                 </div>
             `;
             
-            card.addEventListener('click', () => this.handleMemoryCardClick(card));
-            gridContainer.appendChild(card);
+            card.addEventListener('click', () => this.handleMemoryCardClick(card), { passive: true });
+            fragment.appendChild(card);
         });
+        
+        gridContainer.innerHTML = '';
+        gridContainer.appendChild(fragment);
         
         this.state.kidsGames.memory.cards = cards;
         this.state.kidsGames.memory.totalPairs = pairCount;
-        this.updateKidsScore();
+        this.throttledUpdate();
     }
 
     handleMemoryCardClick(card) {

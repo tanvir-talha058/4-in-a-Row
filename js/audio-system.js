@@ -8,6 +8,9 @@ class AudioSystem {
         this.audioContext = null;
         this.soundEnabled = true;
         this.backgroundMusicPlaying = false;
+        this.soundCache = new Map(); // Cache sound buffers
+        this.maxConcurrentSounds = 5;
+        this.activeSounds = 0;
         this.initialize();
     }
 
@@ -23,21 +26,36 @@ class AudioSystem {
     }
 
     createSound(frequency, duration, type = 'sine', volume = 0.1) {
-        if (!this.soundEnabled || !this.audioContext) return;
+        if (!this.soundEnabled || !this.audioContext || this.activeSounds >= this.maxConcurrentSounds) return;
         
-        const oscillator = this.audioContext.createOscillator();
-        const gainNode = this.audioContext.createGain();
+        // Use object pooling concept
+        this.activeSounds++;
         
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioContext.destination);
-        
-        oscillator.frequency.value = frequency;
-        oscillator.type = type;
-        gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
-        
-        oscillator.start(this.audioContext.currentTime);
-        oscillator.stop(this.audioContext.currentTime + duration);
+        try {
+            const oscillator = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+            gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
+            
+            oscillator.start(this.audioContext.currentTime);
+            oscillator.stop(this.audioContext.currentTime + duration);
+            
+            // Clean up
+            oscillator.onended = () => {
+                this.activeSounds--;
+                oscillator.disconnect();
+                gainNode.disconnect();
+            };
+        } catch (e) {
+            this.activeSounds--;
+            console.warn('Error creating sound:', e);
+        }
     }
 
     // Game-specific sound effects

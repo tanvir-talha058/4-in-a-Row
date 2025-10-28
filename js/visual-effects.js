@@ -8,25 +8,76 @@ class VisualEffects {
         this.isInitialized = false;
         this.particles = [];
         this.animationFrame = null;
+        this.particlePool = null;
+        this.maxParticles = 50; // Limit for performance
+        this.isPageVisible = true;
+        this.domCache = PerformanceUtils.createDOMCache();
+        
+        // Track page visibility
+        document.addEventListener('visibilitychange', () => {
+            this.isPageVisible = !document.hidden;
+            if (!this.isPageVisible) {
+                this.pauseEffects();
+            } else {
+                this.resumeEffects();
+            }
+        });
     }
 
     initialize() {
         if (this.isInitialized) return;
         
+        this.initializeParticlePool();
         this.startBackgroundEffects();
         this.injectStyles();
         this.isInitialized = true;
     }
 
+    initializeParticlePool() {
+        // Create object pool for particles
+        this.particlePool = PerformanceUtils.createObjectPool(
+            () => document.createElement('div'),
+            (element) => {
+                element.className = '';
+                element.style.cssText = '';
+                if (element.parentNode) {
+                    element.parentNode.removeChild(element);
+                }
+            },
+            20
+        );
+    }
+
     startBackgroundEffects() {
-        // Start particle systems
-        setInterval(() => this.createFloatingParticle(), 3000);
-        setInterval(() => this.createSparkle(), 1500);
-        setInterval(() => this.createAuroraWave(), 8000);
+        if (!this.isPageVisible) return;
+        
+        // Use throttled versions for better performance
+        const throttledParticle = PerformanceUtils.throttle(() => {
+            if (this.particles.length < this.maxParticles) {
+                this.createFloatingParticle();
+            }
+        }, 3000);
+        
+        const throttledSparkle = PerformanceUtils.throttle(() => {
+            if (this.particles.length < this.maxParticles) {
+                this.createSparkle();
+            }
+        }, 1500);
+        
+        const throttledAurora = PerformanceUtils.throttle(() => {
+            this.createAuroraWave();
+        }, 8000);
+        
+        // Start intervals
+        setInterval(throttledParticle, 3000);
+        setInterval(throttledSparkle, 1500);
+        setInterval(throttledAurora, 8000);
     }
 
     createFloatingParticle() {
-        const particle = document.createElement('div');
+        if (!this.isPageVisible || this.particles.length >= this.maxParticles) return;
+        
+        const particle = this.particlePool.acquire();
         particle.className = 'floating-particle';
         
         // Random properties
@@ -34,6 +85,7 @@ class VisualEffects {
         const x = Math.random() * window.innerWidth;
         const duration = Math.random() * 10 + 15;
         
+        // Use transform for better performance
         particle.style.cssText = `
             position: fixed;
             width: ${size}px;
@@ -44,22 +96,26 @@ class VisualEffects {
             bottom: -10px;
             pointer-events: none;
             z-index: 1;
-            animation: float-up ${duration}s linear infinite;
+            will-change: transform;
+            animation: float-up ${duration}s linear forwards;
         `;
         
         document.body.appendChild(particle);
+        this.particles.push(particle);
         
         setTimeout(() => {
-            if (particle.parentNode) {
-                particle.parentNode.removeChild(particle);
+            const index = this.particles.indexOf(particle);
+            if (index > -1) {
+                this.particles.splice(index, 1);
             }
+            this.particlePool.release(particle);
         }, duration * 1000);
     }
 
     createSparkle() {
-        if (document.querySelectorAll('.sparkle-global').length > 20) return;
+        if (!this.isPageVisible || document.querySelectorAll('.sparkle-global').length > 10) return;
         
-        const sparkle = document.createElement('div');
+        const sparkle = this.particlePool.acquire();
         sparkle.className = 'sparkle-global';
         
         const x = Math.random() * window.innerWidth;
@@ -76,16 +132,15 @@ class VisualEffects {
             top: ${y}px;
             pointer-events: none;
             z-index: 2;
-            animation: sparkle-twinkle 2s ease-in-out;
+            will-change: transform, opacity;
+            animation: sparkle-twinkle 2s ease-in-out forwards;
             box-shadow: 0 0 ${size * 2}px rgba(255,255,255,0.8);
         `;
         
         document.body.appendChild(sparkle);
         
         setTimeout(() => {
-            if (sparkle.parentNode) {
-                sparkle.parentNode.removeChild(sparkle);
-            }
+            this.particlePool.release(sparkle);
         }, 2000);
     }
 

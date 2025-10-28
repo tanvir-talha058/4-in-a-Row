@@ -1,0 +1,327 @@
+/**
+ * Performance-Optimized CSS
+ * Hardware acceleration and efficient animations
+ */
+
+/* ==================== GPU ACCELERATION ==================== */
+
+.cell,
+.memory-card,
+.simon-button,
+.menu-btn,
+.game-card {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Remove will-change after interaction for better memory */
+.cell:not(:hover),
+.memory-card:not(.flipped):not(.matched),
+.simon-button:not(.active),
+.menu-btn:not(:hover),
+.game-card:not(:hover) {
+    will-change: auto;
+}
+
+/* ==================== EFFICIENT ANIMATIONS ==================== */
+
+/* Use transform and opacity only for smooth 60fps */
+@keyframes optimized-fade-in {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 20px, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes optimized-slide-in {
+    from {
+        transform: translate3d(-100%, 0, 0);
+    }
+    to {
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes optimized-pulse {
+    0%, 100% {
+        transform: scale3d(1, 1, 1);
+    }
+    50% {
+        transform: scale3d(1.05, 1.05, 1);
+    }
+}
+
+/* ==================== OPTIMIZED TRANSITIONS ==================== */
+
+.cell,
+.memory-card,
+.simon-button {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-btn,
+.game-card {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==================== REDUCE REPAINTS ==================== */
+
+/* Use contain for better isolation */
+.game-container,
+.kids-game-container,
+.memory-grid,
+.simon-board {
+    contain: layout style paint;
+}
+
+/* Optimize hover effects */
+.cell:hover,
+.memory-card:hover,
+.simon-button:hover,
+.menu-btn:hover,
+.game-card:hover {
+    transform: scale3d(1.05, 1.05, 1);
+}
+
+/* ==================== OPTIMIZED SHADOWS ==================== */
+
+/* Use CSS filters for better performance */
+.card-front,
+.card-back,
+.simon-button {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.menu-btn:hover,
+.game-card:hover {
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+}
+
+/* ==================== LAZY LOADING OPTIMIZATION ==================== */
+
+/* Skeleton loading for cards */
+.memory-card.loading,
+.game-card.loading {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.1) 25%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0.1) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* ==================== MOBILE OPTIMIZATIONS ==================== */
+
+@media (max-width: 768px) {
+    /* Disable expensive effects on mobile */
+    .floating-particle,
+    .sparkle-global,
+    .aurora-wave {
+        display: none;
+    }
+    
+    /* Reduce animation complexity */
+    .cell,
+    .memory-card,
+    .simon-button {
+        transition-duration: 0.15s;
+    }
+    
+    /* Optimize touch interactions */
+    .cell,
+    .memory-card,
+    .simon-button,
+    .menu-btn {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+}
+
+/* ==================== REDUCE MOTION FOR ACCESSIBILITY ==================== */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .floating-particle,
+    .sparkle-global,
+    .aurora-wave {
+        display: none !important;
+    }
+}
+
+/* ==================== PRINT OPTIMIZATION ==================== */
+
+@media print {
+    .floating-particle,
+    .sparkle-global,
+    .aurora-wave,
+    .sound-controls,
+    .background-animation {
+        display: none !important;
+    }
+}
+
+/* ==================== FONT OPTIMIZATION ==================== */
+
+/* Use system fonts for better performance */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
+                 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ==================== IMAGE OPTIMIZATION ==================== */
+
+img {
+    content-visibility: auto;
+}
+
+/* ==================== SCROLL OPTIMIZATION ==================== */
+
+.game-container,
+.kids-game-container {
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+/* ==================== GRID OPTIMIZATION ==================== */
+
+.memory-grid,
+.simon-board,
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    
+    /* Optimize grid rendering */
+    contain: layout;
+}
+
+/* ==================== PREVENT LAYOUT SHIFTS ==================== */
+
+.memory-card,
+.simon-button,
+.game-card {
+    aspect-ratio: 1;
+}
+
+.kids-game-header {
+    min-height: 80px;
+}
+
+/* ==================== OPTIMIZE BLUR EFFECTS ==================== */
+
+.backdrop-blur {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Disable blur on low-end devices */
+@media (max-width: 480px) {
+    .backdrop-blur {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        background: rgba(0, 0, 0, 0.8);
+    }
+}
+
+/* ==================== CRITICAL CSS LOADING ==================== */
+
+/* Above-the-fold content */
+.header,
+.main-menu,
+.sound-controls {
+    content-visibility: visible;
+}
+
+/* Below-the-fold content */
+.game-container,
+.kids-game-container {
+    content-visibility: auto;
+    contain-intrinsic-size: 800px;
+}
+
+/* ==================== OPTIMIZE Z-INDEX STACKING ==================== */
+
+.background-animation {
+    z-index: 0;
+    isolation: isolate;
+}
+
+.game-board {
+    z-index: 1;
+    isolation: isolate;
+}
+
+.game-message {
+    z-index: 10;
+    isolation: isolate;
+}
+
+/* ==================== REDUCE OVERDRAW ==================== */
+
+.cell::before,
+.memory-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+/* ==================== OPTIMIZE GRADIENTS ==================== */
+
+/* Use simpler gradients on mobile */
+@media (max-width: 768px) {
+    .card-front,
+    .card-back,
+    .simon-button {
+        background: var(--fallback-color, #667eea);
+    }
+}
+
+/* ==================== DEBOUNCE RESIZE EVENTS ==================== */
+
+@media (hover: none) and (pointer: coarse) {
+    /* Optimize for touch devices */
+    .hover-effect {
+        display: none;
+    }
+}
+
+/* ==================== MEMORY MANAGEMENT ==================== */
+
+/* Clean up after animations */
+.memory-card.matched {
+    animation: matchedPulse 0.5s ease forwards;
+    animation-fill-mode: forwards;
+}
+
+/* Remove from rendering after animation */
+.removed {
+    display: none !important;
+}

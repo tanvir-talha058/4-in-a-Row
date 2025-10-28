@@ -10,6 +10,9 @@ class Connect4Game {
         this.ROWS = 6;
         this.COLS = 7;
         this.WINNING_LENGTH = 4;
+        this.transpositionTable = new Map(); // Cache for AI calculations
+        this.domCache = PerformanceUtils.createDOMCache();
+        this.eventListeners = []; // Track listeners for cleanup
     }
 
     initialize() {
@@ -19,17 +22,21 @@ class Connect4Game {
     }
 
     createBoard() {
-        const board = document.getElementById('gameBoard');
+        const board = this.domCache.get('#gameBoard');
         if (!board) return;
         
-        board.innerHTML = '';
+        // Use DocumentFragment for better performance
+        const fragment = document.createDocumentFragment();
         
         for (let row = 0; row < this.ROWS; row++) {
             for (let col = 0; col < this.COLS; col++) {
                 const cell = this.createCell(row, col);
-                board.appendChild(cell);
+                fragment.appendChild(cell);
             }
         }
+        
+        board.innerHTML = '';
+        board.appendChild(fragment);
     }
 
     createCell(row, col) {
@@ -364,16 +371,35 @@ class Connect4Game {
         return false;
     }
 
-    // Minimax algorithm for hard AI
+    // Minimax algorithm for hard AI with optimizations
     getMinimaxMove(depth) {
         let bestScore = -Infinity;
         let bestCol = -1;
         
-        for (let col = 0; col < this.COLS; col++) {
+        // Clear transposition table if too large
+        if (this.transpositionTable.size > 10000) {
+            this.transpositionTable.clear();
+        }
+        
+        // Prioritize center columns first
+        const columnOrder = [3, 2, 4, 1, 5, 0, 6];
+        
+        for (let col of columnOrder) {
             const row = this.getLowestEmptyRow(col);
             if (row !== -1) {
                 this.state.connect4.gameBoard[row][col] = 2;
-                const score = this.minimax(depth - 1, false, -Infinity, Infinity);
+                
+                // Create board hash for transposition table
+                const boardHash = this.getBoardHash();
+                let score;
+                
+                if (this.transpositionTable.has(boardHash)) {
+                    score = this.transpositionTable.get(boardHash);
+                } else {
+                    score = this.minimax(depth - 1, false, -Infinity, Infinity);
+                    this.transpositionTable.set(boardHash, score);
+                }
+                
                 this.state.connect4.gameBoard[row][col] = 0;
                 
                 if (score > bestScore) {
@@ -384,6 +410,11 @@ class Connect4Game {
         }
         
         return bestCol;
+    }
+
+    getBoardHash() {
+        // Create simple hash of board state
+        return this.state.connect4.gameBoard.flat().join('');
     }
 
     minimax(depth, isMaximizing, alpha, beta) {
