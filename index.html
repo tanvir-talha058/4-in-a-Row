@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>4-in-a-Row - Animated Edition</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="css/enhanced-styles.css">
+    <meta name="description" content="Play Connect 4 and educational brain games. Professional, modern, and fun!">
+    <title>4-in-a-Row - Modern Game Collection</title>
+    
+    <!-- Modern Minimal Design -->
+    <link rel="stylesheet" href="css/modern-minimal.css">
     <link rel="stylesheet" href="css/kids-games.css">
     <link rel="stylesheet" href="css/optimized.css">
 </head>
@@ -17,9 +19,8 @@
         </div>
         
         <header class="header">
-            <h1 class="title">4-in-a-Row</h1>
-            <div class="subtitle">Ultimate Animated Edition</div>
-            <div class="title-glow"></div>
+            <h1 class="title">4-in-a-Row Games</h1>
+            <div class="subtitle">Choose your game and start playing</div>
         </header>
 
         <!-- Sound Controls -->
@@ -33,20 +34,13 @@
         <div class="game-menu" id="mainMenu">
             <div class="menu-content">
                 <h2>Select Game Mode</h2>
-                <button class="menu-btn" id="showConnect4">
-                    <span class="btn-text">🔴 Connect 4</span>
-                    <div class="btn-subtitle">Classic strategy game</div>
-                    <div class="btn-glow"></div>
+                <button class="menu-btn" id="showConnect4" aria-label="Play Connect 4">
+                    <span class="btn-text">🎯 Connect 4</span>
+                    <div class="btn-subtitle">Classic strategy game - Connect four pieces to win</div>
                 </button>
-                <button class="menu-btn" id="showKidsGames">
-                    <span class="btn-text">🧠 Brain Games for Kids</span>
-                    <div class="btn-subtitle">Educational & fun learning games</div>
-                    <div class="btn-glow"></div>
-                </button>
-                <button class="menu-btn" id="showMaze">
-                    <span class="btn-text">🏃 Maze Rivals</span>
-                    <div class="btn-subtitle">Adventure maze game</div>
-                    <div class="btn-glow"></div>
+                <button class="menu-btn" id="showKidsGames" aria-label="Play Brain Games">
+                    <span class="btn-text">🧠 Brain Games</span>
+                    <div class="btn-subtitle">Educational games to improve cognitive skills</div>
                 </button>
             </div>
         </div>
@@ -121,7 +115,6 @@
 
                 <button class="menu-btn back-btn" id="backToMain">
                     <span class="btn-text">← Back to Main Menu</span>
-                    <div class="btn-glow"></div>
                 </button>
             </div>
         </div>
@@ -162,26 +155,22 @@
             <div class="menu-content">
                 <h2>Select Difficulty</h2>
                 <div class="difficulty-info">
-                    <p>Choose your AI opponent's intelligence level</p>
+                    <p>Choose your AI opponent's challenge level</p>
                 </div>
-                <button class="menu-btn difficulty-easy" onclick="startGame('ai', 'easy')">
+                <button class="menu-btn difficulty-easy" onclick="startGame('ai', 'easy')" aria-label="Play on Easy difficulty">
                     <span class="btn-text">🟢 Easy</span>
-                    <div class="btn-subtitle">Random moves, beginner friendly</div>
-                    <div class="btn-glow"></div>
+                    <div class="btn-subtitle">Perfect for beginners - AI makes random moves</div>
                 </button>
-                <button class="menu-btn difficulty-medium" onclick="startGame('ai', 'medium')">
+                <button class="menu-btn difficulty-medium" onclick="startGame('ai', 'medium')" aria-label="Play on Medium difficulty">
                     <span class="btn-text">🟡 Medium</span>
-                    <div class="btn-subtitle">Strategic play with some mistakes</div>
-                    <div class="btn-glow"></div>
+                    <div class="btn-subtitle">Balanced challenge - Strategic with occasional mistakes</div>
                 </button>
-                <button class="menu-btn difficulty-hard" onclick="startGame('ai', 'hard')">
+                <button class="menu-btn difficulty-hard" onclick="startGame('ai', 'hard')" aria-label="Play on Hard difficulty">
                     <span class="btn-text">🔴 Hard</span>
-                    <div class="btn-subtitle">Advanced AI with minimax algorithm</div>
-                    <div class="btn-glow"></div>
+                    <div class="btn-subtitle">Expert level - Advanced minimax algorithm</div>
                 </button>
-                <button class="menu-btn back-btn" onclick="goToMainMenu()">
+                <button class="menu-btn back-btn" onclick="goToMainMenu()" aria-label="Back to main menu">
                     <span class="btn-text">← Back</span>
-                    <div class="btn-glow"></div>
                 </button>
             </div>
         </div>
@@ -418,7 +407,9 @@
     </div>
 
     <!-- Refined Modular Scripts -->
+    <!-- Core Scripts -->
     <script src="js/performance-utils.js"></script>
+    <script src="js/ux-enhancer.js"></script>
     <script src="js/game-state.js"></script>
     <script src="js/audio-system.js"></script>
     <script src="js/visual-effects.js"></script>
