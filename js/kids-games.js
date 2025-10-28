@@ -455,6 +455,19 @@ class KidsGamesManager {
             else if (gameType === 'word') this.initializeWordScramble();
         }, 1000);
     }
+
+    resetCurrentGame() {
+        const gameType = this.state.kidsGames.currentGame;
+        this.state.kidsGames.score = 0;
+        
+        if (gameType === 'memory') {
+            this.initializeMemoryMatch();
+        } else if (gameType === 'simon') {
+            this.initializeSimonGame();
+        } else if (gameType === 'wordScramble') {
+            this.initializeWordScramble();
+        }
+    }
 }
 
 // Export

@@ -90,7 +90,6 @@ class GameController {
     setupMenuNavigation() {
         const menuButtons = {
             'showConnect4': () => this.showConnect4Game(),
-            'showMaze': () => this.showMazeGame(),
             'showKidsGames': () => this.showKidsGames(),
             'backToMain': () => this.showMenu('main'),
             'backToKidsMenu': () => this.showMenu('kids')
@@ -169,16 +168,9 @@ class GameController {
         const menus = [
             'mainMenu', 
             'connect4Game', 
-            'mazeGame', 
             'kidsGamesMenu',
-            'memoryMatchGame',
-            'simonGame',
-            'wordScrambleGame',
-            'patternMasterGame',
-            'mathAdventureGame',
-            'wordBuilderGame',
-            'shapePuzzleGame',
-            'colorSymphonyGame'
+            'kidsGameContainer',
+            'difficultyMenu'
         ];
 
         menus.forEach(menuId => {
@@ -205,12 +197,6 @@ class GameController {
         }
         
         this.currentMenu = 'connect4';
-    }
-
-    showMazeGame() {
-        this.showMenu('maze');
-        this.currentMenu = 'maze';
-        // TODO: Initialize maze game when implemented
     }
 
     showKidsGames() {
@@ -500,7 +486,7 @@ class GameController {
     }
 
     isGameActive() {
-        return ['connect4', 'maze', 'memoryMatch', 'patternMaster', 'mathAdventure'].includes(this.currentMenu);
+        return ['connect4', 'memoryMatch', 'simonGame', 'wordScramble'].includes(this.currentMenu);
     }
 }
 
@@ -517,6 +503,42 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.error('Failed to start game:', error);
     }
 });
+
+// Global helper functions for inline onclick handlers
+function startGame(mode, difficulty) {
+    if (window.gameController && window.gameController.connect4Game) {
+        window.gameController.connect4Game.startGame(mode, difficulty);
+    }
+}
+
+function goToMainMenu() {
+    if (window.gameController) {
+        window.gameController.showMenu('main');
+    }
+}
+
+function resetKidsGame() {
+    if (window.gameController && window.gameController.kidsGamesManager) {
+        const currentGame = window.gameController.state.kidsGames.currentGame;
+        window.gameController.kidsGamesManager.resetCurrentGame();
+    }
+}
+
+function goToKidsMenu() {
+    if (window.gameController) {
+        window.gameController.showKidsGames();
+    }
+}
+
+function resetGame() {
+    if (window.gameController && window.gameController.connect4Game) {
+        window.gameController.connect4Game.resetGame();
+    }
+}
+
+function goToMenu() {
+    goToMainMenu();
+}
 
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {
