@@ -183,6 +183,7 @@ class CellType(Enum):
 class MazeRivalsGame:
     def __init__(self, screen):
         self.screen = screen
+        self.clock = pygame.time.Clock()
         self.grid = None
         self.player_pos = None
         self.ai_pos = None
@@ -337,7 +338,7 @@ class MazeRivalsGame:
             if ai_dist_to_exit < player_dist_to_exit:
                 score += 50 * (1 + (player_dist_to_exit - ai_dist_to_exit) / 10)
             else:
-                score -= 50 * (1 + (ai_dist_to_exit - player_to_exit) / 10)
+                score -= 50 * (1 + (ai_dist_to_exit - player_dist_to_exit) / 10)
 
         return score
 
