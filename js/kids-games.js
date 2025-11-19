@@ -15,52 +15,59 @@ class KidsGamesManager {
     // ==================== MEMORY MATCH GAME ====================
     
     initializeMemoryMatch() {
-        const gameContainer = this.domCache.get('#memoryMatchGame');
-        if (!gameContainer) return;
+        try {
+            const gameContainer = this.domCache.get('#memoryMatchGame');
+            if (!gameContainer) {
+                console.error('Memory Match game container not found');
+                return;
+            }
 
-        const gridContainer = gameContainer.querySelector('.memory-grid');
-        if (!gridContainer) return;
+            const gridContainer = gameContainer.querySelector('.memory-grid');
+            if (!gridContainer) {
+                console.error('Memory grid container not found');
+                return;
+            }
 
-        // Reset state
-        this.state.resetKidsGame('memory');
+            // Reset state
+            this.state.resetKidsGame('memory');
 
-        // Get difficulty based on level
-        const level = this.state.kidsGames.level;
-        const pairCount = Math.min(8 + Math.floor(level / 2), 16);
-        
-        // Create card symbols
-        const allSymbols = ['🌟', '🎈', '🎮', '🎨', '🎪', '🎭', '🎯', '🎲', '🎸', '🎺', '🎻', '🎹', '🎤', '🎧', '🎬', '🎥'];
-        const symbols = allSymbols.slice(0, pairCount);
-        const cards = [...symbols, ...symbols].sort(() => Math.random() - 0.5);
-        
-        // Use DocumentFragment for better performance
-        const fragment = document.createDocumentFragment();
-        
-        gridContainer.className = `memory-grid grid-${pairCount * 2}`;
-        
-        cards.forEach((symbol, index) => {
-            const card = document.createElement('div');
-            card.className = 'memory-card';
-            card.dataset.symbol = symbol;
-            card.dataset.index = index;
+            // Get difficulty based on level
+            const level = this.state.kidsGames.level;
+            const pairCount = Math.min(8 + Math.floor(level / 2), 16);
             
-            card.innerHTML = `
-                <div class="card-inner">
-                    <div class="card-front">?</div>
-                    <div class="card-back">${symbol}</div>
-                </div>
-            `;
+            // Create card symbols
+            const allSymbols = ['🌟', '🎈', '🎮', '🎨', '🎪', '🎭', '🎯', '🎲', '🎸', '🎺', '🎻', '🎹', '🎤', '🎧', '🎬', '🎥'];
+            const symbols = allSymbols.slice(0, pairCount);
+            const cards = [...symbols, ...symbols].sort(() => Math.random() - 0.5);
             
-            card.addEventListener('click', () => this.handleMemoryCardClick(card), { passive: true });
-            fragment.appendChild(card);
-        });
-        
-        gridContainer.innerHTML = '';
-        gridContainer.appendChild(fragment);
-        
-        this.state.kidsGames.memory.cards = cards;
-        this.state.kidsGames.memory.totalPairs = pairCount;
-        this.throttledUpdate();
+            // Use DocumentFragment for better performance
+            const fragment = document.createDocumentFragment();
+            
+            gridContainer.className = `memory-grid grid-${pairCount * 2}`;
+            
+            cards.forEach((symbol, index) => {
+                const card = document.createElement('div');
+                card.className = 'memory-card';
+                card.dataset.symbol = symbol;
+                card.dataset.index = index;
+                
+                card.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-front">?</div>
+                        <div class="card-back">${symbol}</div>
+                    </div>
+                `;
+                
+                card.addEventListener('click', () => this.handleMemoryCardClick(card), { passive: true });
+                fragment.appendChild(card);
+            });
+            
+            gridContainer.innerHTML = '';
+            gridContainer.appendChild(fragment);
+            
+            this.state.kidsGames.memory.cards = cards;
+            this.state.kidsGames.memory.totalPairs = pairCount;
+            this.throttledUpdate();
     }
 
     handleMemoryCardClick(card) {
@@ -462,9 +469,9 @@ class KidsGamesManager {
         
         if (gameType === 'memory') {
             this.initializeMemoryMatch();
-        } else if (gameType === 'simon') {
+        } else if (gameType === 'pattern') {
             this.initializeSimonGame();
-        } else if (gameType === 'wordScramble') {
+        } else if (gameType === 'word') {
             this.initializeWordScramble();
         }
     }

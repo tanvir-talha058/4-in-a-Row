@@ -154,7 +154,15 @@ class GameController {
     showMenu(menuName) {
         this.hideAllMenus();
         
-        const menu = document.getElementById(`${menuName}Menu`);
+        // Map menu names to actual IDs
+        const menuIdMap = {
+            'main': 'mainMenu',
+            'kids': 'kidsGamesMenu',
+            'connect4': 'connect4Game'
+        };
+        
+        const menuId = menuIdMap[menuName] || `${menuName}Menu`;
+        const menu = document.getElementById(menuId);
         if (menu) {
             menu.style.display = 'block';
             menu.classList.add('menu-fade-in');
@@ -170,7 +178,15 @@ class GameController {
             'connect4Game', 
             'kidsGamesMenu',
             'kidsGameContainer',
-            'difficultyMenu'
+            'difficultyMenu',
+            'memoryMatchGame',
+            'simonGame',
+            'wordScrambleGame',
+            'patternMasterGame',
+            'mathAdventureGame',
+            'wordBuilderGame',
+            'shapePuzzleGame',
+            'colorSymphonyGame'
         ];
 
         menus.forEach(menuId => {
@@ -207,7 +223,20 @@ class GameController {
     showKidsGame(gameType) {
         this.hideAllMenus();
         
-        const gameContainer = document.getElementById(`${gameType}Game`);
+        // Map game types to container IDs
+        const gameTypeMap = {
+            'memoryMatch': 'memoryMatchGame',
+            'simonGame': 'simonGame',
+            'wordScramble': 'wordScrambleGame',
+            'patternMaster': 'patternMasterGame',
+            'mathAdventure': 'mathAdventureGame',
+            'wordBuilder': 'wordBuilderGame',
+            'shapePuzzle': 'shapePuzzleGame',
+            'colorSymphony': 'colorSymphonyGame'
+        };
+        
+        const containerId = gameTypeMap[gameType] || `${gameType}Game`;
+        const gameContainer = document.getElementById(containerId);
         if (gameContainer) {
             gameContainer.style.display = 'block';
         }
@@ -220,7 +249,20 @@ class GameController {
     }
 
     initializeKidsGame(gameType) {
-        this.gameState.resetKidsGame(gameType);
+        // Map game types to state keys
+        const stateKeyMap = {
+            'memoryMatch': 'memory',
+            'simonGame': 'pattern',
+            'wordScramble': 'word',
+            'patternMaster': 'pattern',
+            'mathAdventure': 'math',
+            'wordBuilder': 'word',
+            'shapePuzzle': 'memory',
+            'colorSymphony': 'pattern'
+        };
+        
+        const stateKey = stateKeyMap[gameType] || gameType;
+        this.gameState.resetKidsGame(stateKey);
         
         switch (gameType) {
             case 'memoryMatch':
@@ -519,7 +561,6 @@ function goToMainMenu() {
 
 function resetKidsGame() {
     if (window.gameController && window.gameController.kidsGamesManager) {
-        const currentGame = window.gameController.state.kidsGames.currentGame;
         window.gameController.kidsGamesManager.resetCurrentGame();
     }
 }

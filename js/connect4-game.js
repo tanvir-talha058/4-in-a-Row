@@ -13,12 +13,28 @@ class Connect4Game {
         this.transpositionTable = new Map(); // Cache for AI calculations
         this.domCache = PerformanceUtils.createDOMCache();
         this.eventListeners = []; // Track listeners for cleanup
+        this.isInitialized = false;
     }
 
     initialize() {
         this.createBoard();
         this.updatePlayerTurn();
         this.setupEventListeners();
+        this.isInitialized = true;
+    }
+
+    startGame(mode, difficulty) {
+        if (mode) {
+            this.setGameMode(mode);
+        }
+        if (difficulty) {
+            this.setDifficulty(difficulty);
+        }
+        this.reset();
+    }
+
+    resetGame() {
+        this.reset();
     }
 
     createBoard() {
@@ -81,36 +97,51 @@ class Connect4Game {
     }
 
     dropPiece(row, col) {
-        // Update game board
-        this.state.connect4.gameBoard[row][col] = this.state.connect4.currentPlayer;
-        
-        // Update UI
-        const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-        if (cell) {
-            cell.classList.add(`player${this.state.connect4.currentPlayer}`, 'drop-animation');
-            this.createRippleEffect(cell);
-        }
-        
-        this.audio.playDropSound();
-        
-        // Check for win
-        if (this.checkWin(row, col)) {
-            this.handleWin(row, col);
-            return;
-        }
-        
-        // Check for tie
-        if (this.isBoardFull()) {
-            this.handleTie();
-            return;
-        }
-        
-        // Switch players
-        this.switchPlayer();
-        
-        // AI turn
-        if (this.state.connect4.gameMode === 'ai' && this.state.connect4.currentPlayer === 2) {
-            setTimeout(() => this.aiMove(), 500);
+        try {
+            // Validate move
+            if (row < 0 || row >= this.ROWS || col < 0 || col >= this.COLS) {
+                console.error('Invalid move coordinates:', row, col);
+                return;
+            }
+            
+            if (this.state.connect4.gameBoard[row][col] !== 0) {
+                console.warn('Attempted to place piece in occupied cell');
+                return;
+            }
+            
+            // Update game board
+            this.state.connect4.gameBoard[row][col] = this.state.connect4.currentPlayer;
+            
+            // Update UI
+            const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+            if (cell) {
+                cell.classList.add(`player${this.state.connect4.currentPlayer}`, 'drop-animation');
+                this.createRippleEffect(cell);
+            }
+            
+            this.audio.playDropSound();
+            
+            // Check for win
+            if (this.checkWin(row, col)) {
+                this.handleWin(row, col);
+                return;
+            }
+            
+            // Check for tie
+            if (this.isBoardFull()) {
+                this.handleTie();
+                return;
+            }
+            
+            // Switch players
+            this.switchPlayer();
+            
+            // AI turn
+            if (this.state.connect4.gameMode === 'ai' && this.state.connect4.currentPlayer === 2) {
+                setTimeout(() => this.aiMove(), 500);
+            }
+        } catch (error) {
+            console.error('Error in dropPiece:', error);
         }
     }
 
@@ -265,30 +296,47 @@ class Connect4Game {
     aiMove() {
         if (this.state.connect4.gameEnded) return;
         
-        const settings = this.state.aiSettings[this.state.connect4.aiDifficulty];
-        let bestCol = -1;
-        
-        // Random move chance
-        if (Math.random() < settings.randomMoveChance) {
-            bestCol = this.getRandomMove();
-        } else {
-            // Strategic move
-            if (this.state.connect4.aiDifficulty === 'hard') {
-                bestCol = this.getMinimaxMove(settings.lookAheadDepth);
-            } else {
-                bestCol = this.getStrategicMove();
+        try {
+            const settings = this.state.aiSettings[this.state.connect4.aiDifficulty];
+            if (!settings) {
+                console.error('Invalid AI difficulty setting');
+                return;
             }
-        }
-        
-        // Fallback to random
-        if (bestCol === -1) {
-            bestCol = this.getRandomMove();
-        }
-        
-        if (bestCol !== -1) {
-            const row = this.getLowestEmptyRow(bestCol);
-            if (row !== -1) {
-                this.dropPiece(row, bestCol);
+            
+            let bestCol = -1;
+            
+            // Random move chance
+            if (Math.random() < settings.randomMoveChance) {
+                bestCol = this.getRandomMove();
+            } else {
+                // Strategic move
+                if (this.state.connect4.aiDifficulty === 'hard') {
+                    bestCol = this.getMinimaxMove(settings.lookAheadDepth);
+                } else {
+                    bestCol = this.getStrategicMove();
+                }
+            }
+            
+            // Fallback to random
+            if (bestCol === -1) {
+                bestCol = this.getRandomMove();
+            }
+            
+            if (bestCol !== -1 && bestCol >= 0 && bestCol < this.COLS) {
+                const row = this.getLowestEmptyRow(bestCol);
+                if (row !== -1) {
+                    this.dropPiece(row, bestCol);
+                }
+            }
+        } catch (error) {
+            console.error('Error in aiMove:', error);
+            // Fallback to random move on error
+            const fallbackCol = this.getRandomMove();
+            if (fallbackCol !== -1) {
+                const row = this.getLowestEmptyRow(fallbackCol);
+                if (row !== -1) {
+                    this.dropPiece(row, fallbackCol);
+                }
             }
         }
     }
@@ -418,12 +466,19 @@ class Connect4Game {
     }
 
     minimax(depth, isMaximizing, alpha, beta) {
-        // Check for terminal states
-        for (let col = 0; col < this.COLS; col++) {
-            for (let row = 0; row < this.ROWS; row++) {
-                if (this.state.connect4.gameBoard[row][col] !== 0) {
-                    if (this.checkWinForPlayer(row, col, 2)) return 1000 + depth;
-                    if (this.checkWinForPlayer(row, col, 1)) return -1000 - depth;
+        // Check for terminal states (win conditions)
+        // Check entire board for wins
+        for (let row = 0; row < this.ROWS; row++) {
+            for (let col = 0; col < this.COLS; col++) {
+                if (this.state.connect4.gameBoard[row][col] === 2) {
+                    if (this.checkWinForPlayer(row, col, 2)) {
+                        return 1000 + depth;
+                    }
+                }
+                if (this.state.connect4.gameBoard[row][col] === 1) {
+                    if (this.checkWinForPlayer(row, col, 1)) {
+                        return -1000 - depth;
+                    }
                 }
             }
         }
