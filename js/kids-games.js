@@ -1,9 +1,9 @@
 /**
- * Kids Games Collection
- * Implementation of educational games for children
+ * Brain Games Collection
+ * Interactive brain development and cognitive training games
  */
 
-class KidsGamesManager {
+class BrainGamesManager {
     constructor(gameState, audioSystem, visualEffects) {
         this.state = gameState;
         this.audio = audioSystem;
@@ -16,58 +16,61 @@ class KidsGamesManager {
     
     initializeMemoryMatch() {
         try {
-            const gameContainer = this.domCache.get('#memoryMatchGame');
+        const gameContainer = this.domCache.get('#memoryMatchGame');
             if (!gameContainer) {
                 console.error('Memory Match game container not found');
                 return;
             }
 
-            const gridContainer = gameContainer.querySelector('.memory-grid');
+        const gridContainer = gameContainer.querySelector('.memory-grid');
             if (!gridContainer) {
                 console.error('Memory grid container not found');
                 return;
             }
 
-            // Reset state
-            this.state.resetKidsGame('memory');
+        // Reset state
+        this.state.resetKidsGame('memory');
 
-            // Get difficulty based on level
-            const level = this.state.kidsGames.level;
-            const pairCount = Math.min(8 + Math.floor(level / 2), 16);
+        // Get difficulty based on level
+        const level = this.state.kidsGames.level;
+        const pairCount = Math.min(8 + Math.floor(level / 2), 16);
+        
+        // Create card symbols
+        const allSymbols = ['🌟', '🎈', '🎮', '🎨', '🎪', '🎭', '🎯', '🎲', '🎸', '🎺', '🎻', '🎹', '🎤', '🎧', '🎬', '🎥'];
+        const symbols = allSymbols.slice(0, pairCount);
+        const cards = [...symbols, ...symbols].sort(() => Math.random() - 0.5);
+        
+        // Use DocumentFragment for better performance
+        const fragment = document.createDocumentFragment();
+        
+        gridContainer.className = `memory-grid grid-${pairCount * 2}`;
+        
+        cards.forEach((symbol, index) => {
+            const card = document.createElement('div');
+            card.className = 'memory-card';
+            card.dataset.symbol = symbol;
+            card.dataset.index = index;
             
-            // Create card symbols
-            const allSymbols = ['🌟', '🎈', '🎮', '🎨', '🎪', '🎭', '🎯', '🎲', '🎸', '🎺', '🎻', '🎹', '🎤', '🎧', '🎬', '🎥'];
-            const symbols = allSymbols.slice(0, pairCount);
-            const cards = [...symbols, ...symbols].sort(() => Math.random() - 0.5);
+            card.innerHTML = `
+                <div class="card-inner">
+                    <div class="card-front">?</div>
+                    <div class="card-back">${symbol}</div>
+                </div>
+            `;
             
-            // Use DocumentFragment for better performance
-            const fragment = document.createDocumentFragment();
-            
-            gridContainer.className = `memory-grid grid-${pairCount * 2}`;
-            
-            cards.forEach((symbol, index) => {
-                const card = document.createElement('div');
-                card.className = 'memory-card';
-                card.dataset.symbol = symbol;
-                card.dataset.index = index;
-                
-                card.innerHTML = `
-                    <div class="card-inner">
-                        <div class="card-front">?</div>
-                        <div class="card-back">${symbol}</div>
-                    </div>
-                `;
-                
-                card.addEventListener('click', () => this.handleMemoryCardClick(card), { passive: true });
-                fragment.appendChild(card);
-            });
-            
-            gridContainer.innerHTML = '';
-            gridContainer.appendChild(fragment);
-            
-            this.state.kidsGames.memory.cards = cards;
-            this.state.kidsGames.memory.totalPairs = pairCount;
-            this.throttledUpdate();
+            card.addEventListener('click', () => this.handleMemoryCardClick(card), { passive: true });
+            fragment.appendChild(card);
+        });
+        
+        gridContainer.innerHTML = '';
+        gridContainer.appendChild(fragment);
+        
+        this.state.kidsGames.memory.cards = cards;
+        this.state.kidsGames.memory.totalPairs = pairCount;
+        this.throttledUpdate();
+        } catch (error) {
+            console.error('Failed to initialize Memory Match:', error);
+        }
     }
 
     handleMemoryCardClick(card) {
@@ -430,15 +433,468 @@ class KidsGamesManager {
         }
     }
 
+    // ==================== MATH CHALLENGE GAME ====================
+    
+    initializeMathChallenge() {
+        const gameContainer = document.getElementById('mathAdventureGame');
+        if (!gameContainer) return;
+
+        this.state.resetKidsGame('math');
+        this.state.kidsGames.math.streak = 0;
+        this.state.kidsGames.math.timeLeft = 30;
+        this.state.kidsGames.math.correct = 0;
+        this.state.kidsGames.math.total = 0;
+
+        this.generateMathQuestion();
+        this.startMathTimer();
+        this.setupMathListeners();
+        this.updateMathDisplay();
+    }
+
+    generateMathQuestion() {
+        const level = this.state.kidsGames.level;
+        const maxNum = Math.min(10 + level * 5, 100);
+        
+        const num1 = Math.floor(Math.random() * maxNum) + 1;
+        const num2 = Math.floor(Math.random() * maxNum) + 1;
+        const operations = ['+', '-', '*'];
+        const operation = operations[Math.floor(Math.random() * operations.length)];
+        
+        let answer;
+        let questionText;
+        
+        switch (operation) {
+            case '+':
+                answer = num1 + num2;
+                questionText = `${num1} + ${num2}`;
+                break;
+            case '-':
+                const larger = Math.max(num1, num2);
+                const smaller = Math.min(num1, num2);
+                answer = larger - smaller;
+                questionText = `${larger} - ${smaller}`;
+                break;
+            case '*':
+                answer = num1 * num2;
+                questionText = `${num1} × ${num2}`;
+                break;
+        }
+        
+        this.state.kidsGames.math.question = {
+            text: questionText,
+            answer: answer,
+            options: this.generateMathOptions(answer)
+        };
+        
+        this.updateMathQuestion();
+    }
+
+    generateMathOptions(correctAnswer) {
+        const options = [correctAnswer];
+        while (options.length < 4) {
+            const wrongAnswer = correctAnswer + Math.floor(Math.random() * 20) - 10;
+            if (wrongAnswer > 0 && !options.includes(wrongAnswer)) {
+                options.push(wrongAnswer);
+            }
+        }
+        return options.sort(() => Math.random() - 0.5);
+    }
+
+    updateMathQuestion() {
+        const questionEl = document.getElementById('mathQuestion');
+        const optionsEl = document.getElementById('mathOptions');
+        
+        if (questionEl) {
+            questionEl.textContent = `${this.state.kidsGames.math.question.text} = ?`;
+        }
+        
+        if (optionsEl) {
+            optionsEl.innerHTML = '';
+            this.state.kidsGames.math.question.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'math-option-btn';
+                btn.textContent = option;
+                btn.onclick = () => this.checkMathAnswer(option);
+                optionsEl.appendChild(btn);
+            });
+        }
+    }
+
+    checkMathAnswer(selectedAnswer) {
+        const correct = selectedAnswer === this.state.kidsGames.math.question.answer;
+        this.state.kidsGames.math.total++;
+        
+        const feedbackEl = document.getElementById('mathFeedback');
+        
+        if (correct) {
+            this.state.kidsGames.math.correct++;
+            this.state.kidsGames.math.streak++;
+            this.state.kidsGames.score += 10 * this.state.kidsGames.math.streak;
+            this.audio.playSuccessSound();
+            this.effects.createSparkleEffect(feedbackEl || document.body);
+            
+            if (feedbackEl) {
+                feedbackEl.textContent = `✅ Correct! +${10 * this.state.kidsGames.math.streak} points`;
+                feedbackEl.className = 'math-feedback success';
+            }
+            
+            setTimeout(() => {
+                this.generateMathQuestion();
+                if (feedbackEl) {
+                    feedbackEl.textContent = '';
+                    feedbackEl.className = 'math-feedback';
+                }
+            }, 1000);
+        } else {
+            this.state.kidsGames.math.streak = 0;
+            this.audio.playErrorSound();
+            
+            if (feedbackEl) {
+                feedbackEl.textContent = `❌ Wrong! The answer was ${this.state.kidsGames.math.question.answer}`;
+                feedbackEl.className = 'math-feedback error';
+            }
+            
+            setTimeout(() => {
+                this.generateMathQuestion();
+                if (feedbackEl) {
+                    feedbackEl.textContent = '';
+                    feedbackEl.className = 'math-feedback';
+                }
+            }, 2000);
+        }
+        
+        this.updateMathDisplay();
+        
+        if (window.progressTracker) {
+            window.progressTracker.updateGameScore('mathAdventure', correct ? 10 : 0);
+        }
+    }
+
+    startMathTimer() {
+        if (this.mathTimerInterval) {
+            clearInterval(this.mathTimerInterval);
+        }
+        
+        this.mathTimerInterval = setInterval(() => {
+            this.state.kidsGames.math.timeLeft--;
+            this.updateMathDisplay();
+            
+            if (this.state.kidsGames.math.timeLeft <= 0) {
+                this.endMathGame();
+            }
+        }, 1000);
+    }
+
+    updateMathDisplay() {
+        const scoreEl = document.getElementById('mathScore');
+        const levelEl = document.getElementById('mathLevel');
+        const streakEl = document.getElementById('mathStreak');
+        const timeEl = document.getElementById('mathTime');
+        const timerBarEl = document.getElementById('mathTimerBar');
+        
+        if (scoreEl) scoreEl.textContent = this.state.kidsGames.score;
+        if (levelEl) levelEl.textContent = this.state.kidsGames.level;
+        if (streakEl) streakEl.textContent = this.state.kidsGames.math.streak;
+        if (timeEl) timeEl.textContent = `${this.state.kidsGames.math.timeLeft}s`;
+        if (timerBarEl) {
+            timerBarEl.style.width = `${(this.state.kidsGames.math.timeLeft / 30) * 100}%`;
+        }
+    }
+
+    endMathGame() {
+        clearInterval(this.mathTimerInterval);
+        const accuracy = this.state.kidsGames.math.total > 0 
+            ? Math.round((this.state.kidsGames.math.correct / this.state.kidsGames.math.total) * 100)
+            : 0;
+        
+        alert(`Time's up! 🎉\n\nScore: ${this.state.kidsGames.score}\nCorrect: ${this.state.kidsGames.math.correct}/${this.state.kidsGames.math.total}\nAccuracy: ${accuracy}%`);
+        
+        if (window.gameController) {
+            window.gameController.showBrainGames();
+        }
+    }
+
+    setupMathListeners() {
+        // Already set up in updateMathQuestion
+    }
+
+    // ==================== NUMBER SEQUENCE GAME ====================
+    
+    initializeNumberSequence() {
+        const gameContainer = document.getElementById('numberSequenceGame');
+        if (!gameContainer) return;
+
+        this.state.resetKidsGame('logic');
+        this.generateSequence();
+        this.setupSequenceListeners();
+        this.updateSequenceDisplay();
+    }
+
+    generateSequence() {
+        const level = this.state.kidsGames.level;
+        const sequenceTypes = ['arithmetic', 'geometric', 'fibonacci', 'square'];
+        const type = sequenceTypes[Math.floor(Math.random() * sequenceTypes.length)];
+        
+        let sequence = [];
+        let nextNumber;
+        
+        switch (type) {
+            case 'arithmetic':
+                const diff = Math.floor(Math.random() * 5) + 2;
+                const start = Math.floor(Math.random() * 10) + 1;
+                sequence = [start, start + diff, start + diff * 2, start + diff * 3];
+                nextNumber = start + diff * 4;
+                break;
+            case 'geometric':
+                const ratio = Math.floor(Math.random() * 3) + 2;
+                const gStart = Math.floor(Math.random() * 5) + 1;
+                sequence = [gStart, gStart * ratio, gStart * ratio * ratio, gStart * ratio * ratio * ratio];
+                nextNumber = gStart * ratio * ratio * ratio * ratio;
+                break;
+            case 'fibonacci':
+                sequence = [1, 1, 2, 3];
+                nextNumber = 5;
+                break;
+            case 'square':
+                const base = Math.floor(Math.random() * 5) + 1;
+                sequence = [base * base, (base + 1) * (base + 1), (base + 2) * (base + 2), (base + 3) * (base + 3)];
+                nextNumber = (base + 4) * (base + 4);
+                break;
+        }
+        
+        this.state.kidsGames.sequence = {
+            numbers: sequence,
+            answer: nextNumber,
+            type: type
+        };
+    }
+
+    updateSequenceDisplay() {
+        const displayEl = document.getElementById('sequenceDisplay');
+        if (displayEl) {
+            displayEl.innerHTML = `
+                <div class="sequence-numbers">
+                    ${this.state.kidsGames.sequence.numbers.map((num, i) => 
+                        `<span class="sequence-number">${num}</span>`
+                    ).join('')}
+                    <span class="sequence-number missing">?</span>
+                </div>
+            `;
+        }
+    }
+
+    setupSequenceListeners() {
+        const inputEl = document.getElementById('sequenceInput');
+        const submitBtn = document.querySelector('.sequence-submit');
+        
+        if (inputEl) {
+            inputEl.value = '';
+            inputEl.focus();
+            inputEl.onkeypress = (e) => {
+                if (e.key === 'Enter') {
+                    this.checkSequence();
+                }
+            };
+        }
+        
+        if (submitBtn) {
+            submitBtn.onclick = () => this.checkSequence();
+        }
+    }
+
+    checkSequence() {
+        const inputEl = document.getElementById('sequenceInput');
+        const feedbackEl = document.getElementById('sequenceFeedback');
+        
+        if (!inputEl || !inputEl.value) return;
+        
+        const guess = parseInt(inputEl.value);
+        const correct = guess === this.state.kidsGames.sequence.answer;
+        
+        if (correct) {
+            this.state.kidsGames.score += 20;
+            this.audio.playSuccessSound();
+            this.effects.createFireworks();
+            
+            if (feedbackEl) {
+                feedbackEl.textContent = '✅ Correct! Great pattern recognition!';
+                feedbackEl.className = 'sequence-feedback success';
+            }
+            
+            if (window.progressTracker) {
+                window.progressTracker.updateGameScore('numberSequence', 20);
+            }
+            
+            setTimeout(() => {
+                this.state.kidsGames.level++;
+                this.generateSequence();
+                this.updateSequenceDisplay();
+                if (inputEl) inputEl.value = '';
+                if (feedbackEl) {
+                    feedbackEl.textContent = '';
+                    feedbackEl.className = 'sequence-feedback';
+                }
+            }, 2000);
+        } else {
+            this.audio.playErrorSound();
+            
+            if (feedbackEl) {
+                feedbackEl.textContent = `❌ Wrong! The answer was ${this.state.kidsGames.sequence.answer}`;
+                feedbackEl.className = 'sequence-feedback error';
+            }
+            
+            setTimeout(() => {
+                if (inputEl) inputEl.value = '';
+                if (feedbackEl) {
+                    feedbackEl.textContent = '';
+                    feedbackEl.className = 'sequence-feedback';
+                }
+            }, 2000);
+        }
+        
+        this.updateSequenceDisplay();
+    }
+
+    // ==================== COLOR MATCH GAME ====================
+    
+    initializeColorMatch() {
+        const gameContainer = document.getElementById('colorMatchGame');
+        if (!gameContainer) return;
+
+        this.state.resetKidsGame('reaction');
+        this.state.kidsGames.colorMatch = {
+            score: 0,
+            correct: 0,
+            total: 0,
+            timeLeft: 60
+        };
+        
+        this.generateColorTarget();
+        this.startColorTimer();
+        this.updateColorDisplay();
+    }
+
+    generateColorTarget() {
+        const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+        const shapes = ['circle', 'square', 'triangle'];
+        
+        const targetColor = colors[Math.floor(Math.random() * colors.length)];
+        const targetShape = shapes[Math.floor(Math.random() * shapes.length)];
+        
+        this.state.kidsGames.colorMatch.target = {
+            color: targetColor,
+            shape: targetShape
+        };
+        
+        // Generate options
+        const options = [{ color: targetColor, shape: targetShape }];
+        while (options.length < 4) {
+            const option = {
+                color: colors[Math.floor(Math.random() * colors.length)],
+                shape: shapes[Math.floor(Math.random() * shapes.length)]
+            };
+            if (!options.some(opt => opt.color === option.color && opt.shape === option.shape)) {
+                options.push(option);
+            }
+        }
+        
+        this.state.kidsGames.colorMatch.options = options.sort(() => Math.random() - 0.5);
+        this.updateColorDisplay();
+    }
+
+    updateColorDisplay() {
+        const targetEl = document.getElementById('targetShape');
+        const optionsEl = document.getElementById('colorOptions');
+        
+        if (targetEl && this.state.kidsGames.colorMatch.target) {
+            targetEl.className = `target-shape ${this.state.kidsGames.colorMatch.target.shape}`;
+            targetEl.style.backgroundColor = this.state.kidsGames.colorMatch.target.color;
+        }
+        
+        if (optionsEl && this.state.kidsGames.colorMatch.options) {
+            optionsEl.innerHTML = '';
+            this.state.kidsGames.colorMatch.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = `color-option ${option.shape}`;
+                btn.style.backgroundColor = option.color;
+                btn.onclick = () => this.checkColorMatch(option);
+                optionsEl.appendChild(btn);
+            });
+        }
+        
+        const scoreEl = document.getElementById('colorScore');
+        const timeEl = document.getElementById('colorTime');
+        const accuracyEl = document.getElementById('colorAccuracy');
+        
+        if (scoreEl) scoreEl.textContent = this.state.kidsGames.colorMatch.score;
+        if (timeEl) timeEl.textContent = `${this.state.kidsGames.colorMatch.timeLeft}s`;
+        if (accuracyEl) {
+            const accuracy = this.state.kidsGames.colorMatch.total > 0
+                ? Math.round((this.state.kidsGames.colorMatch.correct / this.state.kidsGames.colorMatch.total) * 100)
+                : 100;
+            accuracyEl.textContent = `${accuracy}%`;
+        }
+    }
+
+    checkColorMatch(selected) {
+        const target = this.state.kidsGames.colorMatch.target;
+        const correct = selected.color === target.color && selected.shape === target.shape;
+        
+        this.state.kidsGames.colorMatch.total++;
+        
+        if (correct) {
+            this.state.kidsGames.colorMatch.correct++;
+            this.state.kidsGames.colorMatch.score += 10;
+            this.audio.playSuccessSound();
+        } else {
+            this.audio.playErrorSound();
+        }
+        
+        this.generateColorTarget();
+        this.updateColorDisplay();
+        
+        if (window.progressTracker) {
+            window.progressTracker.updateGameScore('colorMatch', correct ? 10 : 0);
+        }
+    }
+
+    startColorTimer() {
+        if (this.colorTimerInterval) {
+            clearInterval(this.colorTimerInterval);
+        }
+        
+        this.colorTimerInterval = setInterval(() => {
+            this.state.kidsGames.colorMatch.timeLeft--;
+            this.updateColorDisplay();
+            
+            if (this.state.kidsGames.colorMatch.timeLeft <= 0) {
+                this.endColorGame();
+            }
+        }, 1000);
+    }
+
+    endColorGame() {
+        clearInterval(this.colorTimerInterval);
+        const accuracy = this.state.kidsGames.colorMatch.total > 0
+            ? Math.round((this.state.kidsGames.colorMatch.correct / this.state.kidsGames.colorMatch.total) * 100)
+            : 0;
+        
+        alert(`Time's up! 🎉\n\nScore: ${this.state.kidsGames.colorMatch.score}\nCorrect: ${this.state.kidsGames.colorMatch.correct}/${this.state.kidsGames.colorMatch.total}\nAccuracy: ${accuracy}%`);
+        
+        if (window.gameController) {
+            window.gameController.showBrainGames();
+        }
+    }
+
     // ==================== UTILITY METHODS ====================
     
     updateKidsScore() {
-        const scoreEls = document.querySelectorAll('.kids-score-value');
+        const scoreEls = document.querySelectorAll('.kids-score-value, .brain-score-value');
         scoreEls.forEach(el => {
             el.textContent = this.state.kidsGames.score;
         });
         
-        const levelEls = document.querySelectorAll('.kids-level-value');
+        const levelEls = document.querySelectorAll('.kids-level-value, .brain-level-value');
         levelEls.forEach(el => {
             el.textContent = this.state.kidsGames.level;
         });
@@ -473,13 +929,19 @@ class KidsGamesManager {
             this.initializeSimonGame();
         } else if (gameType === 'word') {
             this.initializeWordScramble();
+        } else if (gameType === 'math') {
+            this.initializeMathChallenge();
+        } else if (gameType === 'logic') {
+            this.initializeNumberSequence();
+        } else if (gameType === 'reaction') {
+            this.initializeColorMatch();
         }
     }
 }
 
 // Export
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = KidsGamesManager;
+    module.exports = BrainGamesManager;
 } else if (typeof window !== 'undefined') {
-    window.KidsGamesManager = KidsGamesManager;
+    window.BrainGamesManager = BrainGamesManager;
 }

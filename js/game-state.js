@@ -156,6 +156,23 @@ class GameState {
                     maxAttempts: 3
                 };
                 break;
+            case 'logic':
+                this.kidsGames.sequence = {
+                    numbers: [],
+                    answer: null,
+                    type: ''
+                };
+                break;
+            case 'reaction':
+                this.kidsGames.colorMatch = {
+                    target: null,
+                    options: [],
+                    score: 0,
+                    correct: 0,
+                    total: 0,
+                    timeLeft: 60
+                };
+                break;
         }
     }
 

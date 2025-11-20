@@ -211,6 +211,77 @@ body {
     color: var(--text-primary);
 }
 
+.game-entry-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.entry-card {
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border-light);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    text-align: left;
+    cursor: pointer;
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    position: relative;
+    min-height: 180px;
+}
+
+.entry-card.connect4-card {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(236, 72, 153, 0.12));
+    border-color: var(--primary-light);
+}
+
+.entry-card.secondary {
+    background: var(--bg-secondary);
+}
+
+.entry-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-light);
+}
+
+.entry-icon {
+    font-size: 2rem;
+    margin-bottom: var(--spacing-sm);
+}
+
+.entry-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.entry-desc {
+    font-size: 0.9375rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin-bottom: var(--spacing-md);
+}
+
+.entry-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.main-menu-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--spacing-md);
+}
+
 .difficulty-info,
 .games-subtitle {
     text-align: center;
@@ -619,6 +690,10 @@ body {
         padding: var(--spacing-lg);
     }
     
+    .game-entry-grid {
+        grid-template-columns: 1fr;
+    }
+
     .games-grid {
         grid-template-columns: 1fr;
     }

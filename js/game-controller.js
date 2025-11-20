@@ -52,8 +52,11 @@ class GameController {
         // Initialize Connect 4 game
         this.connect4Game = new Connect4Game(this.gameState, this.audioSystem);
         
-        // Initialize Kids Games Manager
-        this.kidsGamesManager = new KidsGamesManager(this.gameState, this.audioSystem, this.visualEffects);
+        // Initialize Brain Games Manager
+        this.brainGamesManager = new BrainGamesManager(this.gameState, this.audioSystem, this.visualEffects);
+        
+        // Initialize progress tracking
+        this.progressTracker = window.progressTracker || new ProgressTracker();
     }
 
     setupGlobalEventListeners() {
@@ -89,10 +92,10 @@ class GameController {
 
     setupMenuNavigation() {
         const menuButtons = {
-            'showConnect4': () => this.showConnect4Game(),
-            'showKidsGames': () => this.showKidsGames(),
-            'backToMain': () => this.showMenu('main'),
-            'backToKidsMenu': () => this.showMenu('kids')
+            'showBrainGames': () => this.showBrainGames(),
+            'backToMainFromBrain': () => this.showMenu('main'),
+            'backToMainFromConnect4': () => this.showMenu('main'),
+            'backToBrainMenu': () => this.showMenu('brain')
         };
 
         Object.entries(menuButtons).forEach(([id, handler]) => {
@@ -101,39 +104,49 @@ class GameController {
                 button.addEventListener('click', handler);
             }
         });
+
+        this.setupEntryMenu();
+    }
+
+    setupEntryMenu() {
+        const entryCards = document.querySelectorAll('[data-game-entry]');
+        entryCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const target = card.dataset.gameEntry;
+                if (!target) return;
+
+                if (target === 'connect4') {
+                    this.showConnect4Game();
+                } else if (target === 'brainMenu') {
+                    this.showBrainGames();
+                } else {
+                    this.showBrainGame(target);
+                }
+            });
+        });
     }
 
     setupKeyboardShortcuts() {
         document.addEventListener('keydown', (event) => {
-            // Don't handle shortcuts when typing in inputs
             if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
                 return;
             }
 
-            switch (event.key) {
+            switch (event.key.toLowerCase()) {
                 case 'r':
-                case 'R':
-                    if (this.currentMenu === 'connect4') {
+                    if (this.currentMenu === 'connect4' && this.connect4Game) {
                         this.connect4Game.reset();
+                    } else if (this.isBrainGameActive()) {
+                        resetBrainGame();
                     }
                     break;
                 case 'm':
-                case 'M':
                     this.audioSystem.toggle();
+                    this.updateSoundButton(this.audioSystem.soundEnabled);
                     break;
-                case 'Escape':
-                    this.showMenu('main');
-                    break;
-                case '1':
-                case '2':
-                case '3':
-                case '4':
-                case '5':
-                case '6':
-                case '7':
-                    if (this.currentMenu === 'connect4') {
-                        const col = parseInt(event.key) - 1;
-                        this.connect4Game.handleCellClick(col);
+                case 'escape':
+                    if (this.currentMenu !== 'main') {
+                        this.showMenu('main');
                     }
                     break;
             }
@@ -157,8 +170,7 @@ class GameController {
         // Map menu names to actual IDs
         const menuIdMap = {
             'main': 'mainMenu',
-            'kids': 'kidsGamesMenu',
-            'connect4': 'connect4Game'
+            'brain': 'brainGamesMenu'
         };
         
         const menuId = menuIdMap[menuName] || `${menuName}Menu`;
@@ -170,23 +182,41 @@ class GameController {
         
         this.currentMenu = menuName;
         this.audioSystem.playClickSound();
+        
+        // Update stats on main menu
+        if (menuName === 'main') {
+            this.updateMainMenuStats();
+        }
+    }
+
+    updateMainMenuStats() {
+        const stats = this.progressTracker.getOverallStats();
+        const totalScoreEl = document.getElementById('totalScore');
+        const gamesPlayedEl = document.getElementById('gamesPlayed');
+        const currentLevelEl = document.getElementById('currentLevel');
+        const overallProgressEl = document.getElementById('overallProgress');
+        
+        if (totalScoreEl) totalScoreEl.textContent = stats.totalScore || 0;
+        if (gamesPlayedEl) gamesPlayedEl.textContent = stats.gamesPlayed || 0;
+        if (currentLevelEl) currentLevelEl.textContent = stats.level || 1;
+        if (overallProgressEl) {
+            overallProgressEl.style.width = `${stats.progress || 0}%`;
+            overallProgressEl.textContent = `${stats.progress || 0}%`;
+        }
     }
 
     hideAllMenus() {
         const menus = [
             'mainMenu', 
-            'connect4Game', 
-            'kidsGamesMenu',
+            'brainGamesMenu',
+            'connect4Game',
             'kidsGameContainer',
-            'difficultyMenu',
             'memoryMatchGame',
             'simonGame',
             'wordScrambleGame',
-            'patternMasterGame',
             'mathAdventureGame',
-            'wordBuilderGame',
-            'shapePuzzleGame',
-            'colorSymphonyGame'
+            'numberSequenceGame',
+            'colorMatchGame'
         ];
 
         menus.forEach(menuId => {
@@ -198,29 +228,107 @@ class GameController {
         });
     }
 
+    showAchievements() {
+        const panel = document.getElementById('achievementsPanel');
+        if (panel) {
+            panel.style.display = 'block';
+            this.updateAchievementsDisplay();
+        }
+    }
+
+    hideAchievements() {
+        const panel = document.getElementById('achievementsPanel');
+        if (panel) {
+            panel.style.display = 'none';
+        }
+    }
+
+    updateAchievementsDisplay() {
+        const achievements = this.progressTracker.getAchievements();
+        const grid = document.getElementById('achievementsGrid');
+        if (!grid) return;
+        
+        grid.innerHTML = '';
+        achievements.forEach(achievement => {
+            const achievementCard = document.createElement('div');
+            achievementCard.className = `achievement-card ${achievement.unlocked ? 'unlocked' : 'locked'}`;
+            achievementCard.innerHTML = `
+                <div class="achievement-icon">${achievement.icon}</div>
+                <div class="achievement-name">${achievement.name}</div>
+                <div class="achievement-desc">${achievement.description}</div>
+                ${achievement.unlocked ? `<div class="achievement-date">Unlocked: ${achievement.date}</div>` : ''}
+            `;
+            grid.appendChild(achievementCard);
+        });
+    }
+
+    showBrainGames() {
+        this.showMenu('brain');
+        this.currentMenu = 'brain';
+        this.setupCategoryFilter();
+        this.updateGameProgress();
+    }
+
     showConnect4Game() {
-        this.showMenu('connect4');
-        
-        // Initialize Connect 4 if not already done
-        if (!this.connect4Game.isInitialized) {
+        this.hideAllMenus();
+        const container = document.getElementById('connect4Game');
+        if (container) {
+            container.style.display = 'block';
+            container.classList.add('menu-fade-in');
+        }
+
+        if (this.connect4Game && !this.connect4Game.isInitialized) {
             this.connect4Game.initialize();
+        } else if (this.connect4Game) {
+            this.connect4Game.updateModeButtons();
+            this.connect4Game.updateDifficultyButtons();
+            this.connect4Game.updatePlayerTurn?.();
         }
-        
-        // Make sure the game board is visible
-        const gameContainer = document.getElementById('connect4Game');
-        if (gameContainer) {
-            gameContainer.style.display = 'block';
-        }
-        
+
         this.currentMenu = 'connect4';
+        this.audioSystem.playClickSound();
     }
 
-    showKidsGames() {
-        this.showMenu('kids');
-        this.currentMenu = 'kids';
+    setupCategoryFilter() {
+        const categoryTabs = document.querySelectorAll('.category-tab');
+        categoryTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                categoryTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const category = tab.dataset.category;
+                this.filterGamesByCategory(category);
+            });
+        });
     }
 
-    showKidsGame(gameType) {
+    filterGamesByCategory(category) {
+        const gameCards = document.querySelectorAll('.game-card');
+        gameCards.forEach(card => {
+            if (category === 'all' || card.dataset.category === category) {
+                card.style.display = 'block';
+                card.classList.add('fade-in');
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    updateGameProgress() {
+        const progressData = this.progressTracker.getGameProgress();
+        const gameCards = document.querySelectorAll('.game-card');
+        gameCards.forEach(card => {
+            const gameType = card.onclick.toString().match(/'(\w+)'/)?.[1];
+            if (gameType && progressData[gameType]) {
+                const progress = progressData[gameType].progress || 0;
+                const progressBar = card.querySelector('.progress-fill-mini');
+                if (progressBar) {
+                    progressBar.style.width = `${progress}%`;
+                }
+            }
+        });
+    }
+
+    showBrainGame(gameType) {
         this.hideAllMenus();
         
         // Map game types to container IDs
@@ -228,11 +336,9 @@ class GameController {
             'memoryMatch': 'memoryMatchGame',
             'simonGame': 'simonGame',
             'wordScramble': 'wordScrambleGame',
-            'patternMaster': 'patternMasterGame',
             'mathAdventure': 'mathAdventureGame',
-            'wordBuilder': 'wordBuilderGame',
-            'shapePuzzle': 'shapePuzzleGame',
-            'colorSymphony': 'colorSymphonyGame'
+            'numberSequence': 'numberSequenceGame',
+            'colorMatch': 'colorMatchGame'
         };
         
         const containerId = gameTypeMap[gameType] || `${gameType}Game`;
@@ -244,51 +350,48 @@ class GameController {
         this.currentMenu = gameType;
         this.audioSystem.playClickSound();
         
-        // Initialize specific kids game
-        this.initializeKidsGame(gameType);
+        // Initialize specific brain game
+        this.initializeBrainGame(gameType);
     }
 
-    initializeKidsGame(gameType) {
+    initializeBrainGame(gameType) {
         // Map game types to state keys
         const stateKeyMap = {
             'memoryMatch': 'memory',
             'simonGame': 'pattern',
             'wordScramble': 'word',
-            'patternMaster': 'pattern',
             'mathAdventure': 'math',
-            'wordBuilder': 'word',
-            'shapePuzzle': 'memory',
-            'colorSymphony': 'pattern'
+            'numberSequence': 'logic',
+            'colorMatch': 'reaction'
         };
         
         const stateKey = stateKeyMap[gameType] || gameType;
         this.gameState.resetKidsGame(stateKey);
         
+        // Track game start
+        this.progressTracker.startGame(gameType);
+        
         switch (gameType) {
             case 'memoryMatch':
-                this.kidsGamesManager.initializeMemoryMatch();
+                this.brainGamesManager.initializeMemoryMatch();
                 break;
             case 'simonGame':
-                this.kidsGamesManager.initializeSimonGame();
+                this.brainGamesManager.initializeSimonGame();
                 break;
             case 'wordScramble':
-                this.kidsGamesManager.initializeWordScramble();
-                break;
-            case 'patternMaster':
-                this.initializePatternGame();
+                this.brainGamesManager.initializeWordScramble();
                 break;
             case 'mathAdventure':
-                this.initializeMathGame();
+                this.brainGamesManager.initializeMathChallenge();
                 break;
-            case 'wordBuilder':
-                this.showComingSoon('Word Builder');
+            case 'numberSequence':
+                this.brainGamesManager.initializeNumberSequence();
                 break;
-            case 'shapePuzzle':
-                this.showComingSoon('Shape Puzzle');
+            case 'colorMatch':
+                this.brainGamesManager.initializeColorMatch();
                 break;
-            case 'colorSymphony':
-                this.showComingSoon('Color Symphony');
-                break;
+            default:
+                console.warn('Unknown game type:', gameType);
         }
     }
 
@@ -527,8 +630,12 @@ class GameController {
         return this.currentMenu;
     }
 
+    isBrainGameActive() {
+        return ['memoryMatch', 'simonGame', 'wordScramble', 'mathAdventure', 'numberSequence', 'colorMatch'].includes(this.currentMenu);
+    }
+
     isGameActive() {
-        return ['connect4', 'memoryMatch', 'simonGame', 'wordScramble'].includes(this.currentMenu);
+        return this.currentMenu === 'connect4' || this.isBrainGameActive();
     }
 }
 
@@ -559,26 +666,34 @@ function goToMainMenu() {
     }
 }
 
-function resetKidsGame() {
-    if (window.gameController && window.gameController.kidsGamesManager) {
-        window.gameController.kidsGamesManager.resetCurrentGame();
+function resetBrainGame() {
+    if (window.gameController && window.gameController.brainGamesManager) {
+        window.gameController.brainGamesManager.resetCurrentGame();
     }
 }
 
-function goToKidsMenu() {
+function goToBrainMenu() {
     if (window.gameController) {
-        window.gameController.showKidsGames();
+        window.gameController.showBrainGames();
     }
+}
+
+function goToMenu() {
+    goToMainMenu();
+}
+
+function resetKidsGame() {
+    resetBrainGame();
+}
+
+function goToKidsMenu() {
+    goToBrainMenu();
 }
 
 function resetGame() {
     if (window.gameController && window.gameController.connect4Game) {
         window.gameController.connect4Game.resetGame();
     }
-}
-
-function goToMenu() {
-    goToMainMenu();
 }
 
 // Export for module systems

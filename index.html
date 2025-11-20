@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Play Connect 4 and educational brain games. Professional, modern, and fun!">
-    <title>4-in-a-Row - Modern Game Collection</title>
+    <meta name="description" content="Brain Development Games - Interactive cognitive training games to boost memory, focus, and mental agility!">
+    <title>BrainBoost - Interactive Brain Development Games</title>
     
     <!-- Modern Minimal Design -->
     <link rel="stylesheet" href="css/modern-minimal.css">
     <link rel="stylesheet" href="css/kids-games.css">
+    <link rel="stylesheet" href="css/brain-boost.css">
     <link rel="stylesheet" href="css/optimized.css">
 </head>
 <body>
@@ -19,8 +20,14 @@
         </div>
         
         <header class="header">
-            <h1 class="title">4-in-a-Row Games</h1>
-            <div class="subtitle">Choose your game and start playing</div>
+            <h1 class="title">🧠 BrainBoost</h1>
+            <div class="subtitle">Interactive Brain Development & Cognitive Training</div>
+            <div class="progress-bar-container">
+                <div class="progress-label">Overall Progress</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="overallProgress">0%</div>
+                </div>
+            </div>
         </header>
 
         <!-- Sound Controls -->
@@ -33,46 +40,134 @@
         <!-- Main Menu -->
         <div class="game-menu" id="mainMenu">
             <div class="menu-content">
-                <h2>Select Game Mode</h2>
-                <button class="menu-btn" id="showConnect4" aria-label="Play Connect 4">
-                    <span class="btn-text">🎯 Connect 4</span>
-                    <div class="btn-subtitle">Classic strategy game - Connect four pieces to win</div>
-                </button>
-                <button class="menu-btn" id="showKidsGames" aria-label="Play Brain Games">
-                    <span class="btn-text">🧠 Brain Games</span>
-                    <div class="btn-subtitle">Educational games to improve cognitive skills</div>
-                </button>
+                <h2>🎯 Start Your Training Session</h2>
+                <div class="stats-overview">
+                    <div class="stat-card">
+                        <div class="stat-icon">⭐</div>
+                        <div class="stat-value" id="totalScore">0</div>
+                        <div class="stat-label">Total Score</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏆</div>
+                        <div class="stat-value" id="gamesPlayed">0</div>
+                        <div class="stat-label">Games Played</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📈</div>
+                        <div class="stat-value" id="currentLevel">1</div>
+                        <div class="stat-label">Level</div>
+                    </div>
+                </div>
+
+                <div class="game-entry-grid" id="gameEntryGrid">
+                    <button class="entry-card connect4-card" data-game-entry="connect4">
+                        <div class="entry-icon">🔴</div>
+                        <div class="entry-title">Connect 4</div>
+                        <div class="entry-desc">Challenge the AI or play locally with a friend.</div>
+                        <span class="entry-tag">Strategy</span>
+                    </button>
+                    <button class="entry-card" data-game-entry="memoryMatch">
+                        <div class="entry-icon">🧩</div>
+                        <div class="entry-title">Memory Match</div>
+                        <div class="entry-desc">Sharpen recall skills by pairing matching cards.</div>
+                        <span class="entry-tag">Memory</span>
+                    </button>
+                    <button class="entry-card" data-game-entry="simonGame">
+                        <div class="entry-icon">🎵</div>
+                        <div class="entry-title">Pattern Memory</div>
+                        <div class="entry-desc">Repeat the glowing pattern and keep the streak going.</div>
+                        <span class="entry-tag">Focus</span>
+                    </button>
+                    <button class="entry-card" data-game-entry="wordScramble">
+                        <div class="entry-icon">📝</div>
+                        <div class="entry-title">Word Scramble</div>
+                        <div class="entry-desc">Unscramble letters to boost vocabulary and spelling.</div>
+                        <span class="entry-tag">Language</span>
+                    </button>
+                    <button class="entry-card" data-game-entry="mathAdventure">
+                        <div class="entry-icon">🔢</div>
+                        <div class="entry-title">Math Challenge</div>
+                        <div class="entry-desc">Race the clock to solve arithmetic problems.</div>
+                        <span class="entry-tag">Math</span>
+                    </button>
+                    <button class="entry-card" data-game-entry="numberSequence">
+                        <div class="entry-icon">🔍</div>
+                        <div class="entry-title">Number Sequence</div>
+                        <div class="entry-desc">Identify patterns and predict the next number.</div>
+                        <span class="entry-tag">Logic</span>
+                    </button>
+                    <button class="entry-card" data-game-entry="colorMatch">
+                        <div class="entry-icon">🎨</div>
+                        <div class="entry-title">Color Match</div>
+                        <div class="entry-desc">Speed and accuracy game for quick thinkers.</div>
+                        <span class="entry-tag">Reaction</span>
+                    </button>
+                    <button class="entry-card secondary" data-game-entry="brainMenu">
+                        <div class="entry-icon">🧠</div>
+                        <div class="entry-title">Browse Brain Gym</div>
+                        <div class="entry-desc">View the full catalog of cognitive games.</div>
+                        <span class="entry-tag">All Games</span>
+                    </button>
+                </div>
+
+                <div class="menu-footer main-menu-actions">
+                    <button class="menu-btn secondary-btn" id="showBrainGames" aria-label="View Brain Games">
+                        <span class="btn-text">Browse All Brain Games</span>
+                        <div class="btn-subtitle">Open the dedicated brain training hub</div>
+                    </button>
+                    <button class="menu-btn achievement-btn" onclick="gameController.showAchievements()">
+                        <span class="btn-text">🏆 View Achievements</span>
+                        <div class="btn-subtitle">Track milestones and progress</div>
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- Kids Games Menu -->
-        <div class="kids-games-menu" id="kidsGamesMenu" style="display: none;">
-            <div class="menu-content kids-menu">
-                <h2>🎓 Brain Development Games</h2>
-                <div class="games-subtitle">Fun games to boost cognitive skills!</div>
+        <!-- Brain Games Menu -->
+        <div class="brain-games-menu" id="brainGamesMenu" style="display: none;">
+            <div class="menu-content brain-menu">
+                <h2>🧠 Brain Training Games</h2>
+                <div class="games-subtitle">Challenge your mind and boost cognitive abilities!</div>
+                <div class="skill-categories">
+                    <div class="category-tab active" data-category="all">All Games</div>
+                    <div class="category-tab" data-category="memory">Memory</div>
+                    <div class="category-tab" data-category="logic">Logic</div>
+                    <div class="category-tab" data-category="language">Language</div>
+                    <div class="category-tab" data-category="math">Math</div>
+                </div>
                 
-                <div class="games-grid">
-                    <button class="game-card memory-game" onclick="gameController.showKidsGame('memoryMatch')">
+                <div class="games-grid" id="gamesGrid">
+                    <button class="game-card memory-game" data-category="memory" onclick="gameController.showBrainGame('memoryMatch')">
                         <div class="game-icon">🧩</div>
                         <div class="game-title">Memory Match</div>
-                        <div class="game-desc">Match pairs to improve memory</div>
+                        <div class="game-desc">Match pairs to improve memory and concentration</div>
                         <div class="skill-tags">
                             <span class="skill-tag">Memory</span>
                             <span class="skill-tag">Focus</span>
                         </div>
+                        <div class="game-progress">
+                            <div class="progress-bar-mini">
+                                <div class="progress-fill-mini" style="width: 0%"></div>
+                            </div>
+                        </div>
                     </button>
 
-                    <button class="game-card simon-game" onclick="gameController.showKidsGame('simonGame')">
+                    <button class="game-card simon-game" data-category="memory" onclick="gameController.showBrainGame('simonGame')">
                         <div class="game-icon">🎵</div>
-                        <div class="game-title">Simon Game</div>
-                        <div class="game-desc">Remember and repeat patterns</div>
+                        <div class="game-title">Pattern Memory</div>
+                        <div class="game-desc">Remember and repeat color patterns</div>
                         <div class="skill-tags">
                             <span class="skill-tag">Pattern Memory</span>
                             <span class="skill-tag">Sequence</span>
                         </div>
+                        <div class="game-progress">
+                            <div class="progress-bar-mini">
+                                <div class="progress-fill-mini" style="width: 0%"></div>
+                            </div>
+                        </div>
                     </button>
 
-                    <button class="game-card word-game" onclick="gameController.showKidsGame('wordScramble')">
+                    <button class="game-card word-game" data-category="language" onclick="gameController.showBrainGame('wordScramble')">
                         <div class="game-icon">📝</div>
                         <div class="game-title">Word Scramble</div>
                         <div class="game-desc">Unscramble letters to form words</div>
@@ -80,12 +175,67 @@
                             <span class="skill-tag">Vocabulary</span>
                             <span class="skill-tag">Spelling</span>
                         </div>
+                        <div class="game-progress">
+                            <div class="progress-bar-mini">
+                                <div class="progress-fill-mini" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </button>
+
+                    <button class="game-card math-game" data-category="math" onclick="gameController.showBrainGame('mathAdventure')">
+                        <div class="game-icon">🔢</div>
+                        <div class="game-title">Math Challenge</div>
+                        <div class="game-desc">Solve math problems to boost calculation skills</div>
+                        <div class="skill-tags">
+                            <span class="skill-tag">Math</span>
+                            <span class="skill-tag">Speed</span>
+                        </div>
+                        <div class="game-progress">
+                            <div class="progress-bar-mini">
+                                <div class="progress-fill-mini" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </button>
+
+                    <button class="game-card logic-game" data-category="logic" onclick="gameController.showBrainGame('numberSequence')">
+                        <div class="game-icon">🔍</div>
+                        <div class="game-title">Number Sequence</div>
+                        <div class="game-desc">Find the pattern in number sequences</div>
+                        <div class="skill-tags">
+                            <span class="skill-tag">Logic</span>
+                            <span class="skill-tag">Pattern</span>
+                        </div>
+                        <div class="game-progress">
+                            <div class="progress-bar-mini">
+                                <div class="progress-fill-mini" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </button>
+
+                    <button class="game-card logic-game" data-category="logic" onclick="gameController.showBrainGame('colorMatch')">
+                        <div class="game-icon">🎨</div>
+                        <div class="game-title">Color Match</div>
+                        <div class="game-desc">Match colors and shapes to test reaction time</div>
+                        <div class="skill-tags">
+                            <span class="skill-tag">Reaction</span>
+                            <span class="skill-tag">Focus</span>
+                        </div>
+                        <div class="game-progress">
+                            <div class="progress-bar-mini">
+                                <div class="progress-fill-mini" style="width: 0%"></div>
+                            </div>
+                        </div>
                     </button>
                 </div>
 
-                <button class="menu-btn back-btn" id="backToMain">
-                    <span class="btn-text">← Back to Main Menu</span>
-                </button>
+                <div class="menu-footer">
+                    <button class="menu-btn back-btn" id="backToMainFromBrain">
+                        <span class="btn-text">← Back to Main Menu</span>
+                    </button>
+                    <button class="menu-btn achievement-btn" onclick="gameController.showAchievements()">
+                        <span class="btn-text">🏆 Achievements</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -145,8 +295,19 @@
             </div>
         </div>
 
+        <!-- Achievement System -->
+        <div class="achievements-panel" id="achievementsPanel" style="display: none;">
+            <div class="achievements-content">
+                <h2>🏆 Achievements</h2>
+                <div class="achievements-grid" id="achievementsGrid">
+                    <!-- Achievements will be dynamically generated -->
+                </div>
+                <button class="close-btn" onclick="gameController.hideAchievements()">✕</button>
+            </div>
+        </div>
+
         <!-- Connect 4 Game Container -->
-        <div class="game-container" id="connect4Game" style="display: none;">
+        <div class="connect4-container" id="connect4Game" style="display: none;">
             <div class="game-info">
                 <div class="player-indicator">
                     <div class="player-turn" id="currentTurn">
@@ -189,7 +350,7 @@
                 <button class="control-btn" id="resetGame">
                     <span>🔄 New Game</span>
                 </button>
-                <button class="control-btn" id="backToMain">
+                <button class="control-btn" id="backToMainFromConnect4">
                     <span>🏠 Main Menu</span>
                 </button>
             </div>
@@ -205,7 +366,7 @@
                     <div class="kids-score">Score: <span class="kids-score-value">0</span></div>
                     <div class="kids-level">Level: <span class="kids-level-value">1</span></div>
                 </div>
-                <button class="back-btn" id="backToKidsMenu">← Back to Games</button>
+                <button class="back-btn" onclick="goToBrainMenu()">← Back to Games</button>
             </div>
             <div class="memory-grid">
                 <!-- Cards will be generated by JavaScript -->
@@ -220,7 +381,7 @@
                     <div class="kids-score">Score: <span class="kids-score-value">0</span></div>
                     <div class="kids-level">Level: <span class="kids-level-value">1</span></div>
                 </div>
-                <button class="back-btn" id="backToKidsMenu">← Back to Games</button>
+                <button class="back-btn" onclick="goToBrainMenu()">← Back to Games</button>
             </div>
             <div class="simon-game-area">
                 <div class="simon-message">Watch the pattern...</div>
@@ -241,7 +402,7 @@
                     <div class="kids-score">Score: <span class="kids-score-value">0</span></div>
                     <div class="kids-level">Level: <span class="kids-level-value">1</span></div>
                 </div>
-                <button class="back-btn" id="backToKidsMenu">← Back to Games</button>
+                <button class="back-btn" onclick="goToBrainMenu()">← Back to Games</button>
             </div>
             <div class="word-scramble-area">
                 <div class="word-display">
@@ -266,7 +427,7 @@
             <div class="kids-game-header">
                 <h2>🌈 Pattern Master</h2>
                 <div class="kids-score">Score: <span id="kidsScore">0</span></div>
-                <button class="back-btn" id="backToKidsMenu">← Back to Games</button>
+                <button class="back-btn" onclick="goToBrainMenu()">← Back to Games</button>
             </div>
             <div class="pattern-display">
                 <div class="pattern-buttons">
@@ -278,17 +439,109 @@
             </div>
         </div>
 
-        <!-- Math Adventure Game -->
-        <div class="kids-game-container" id="mathAdventureGame" style="display: none;">
-            <div class="kids-game-header">
-                <h2>🔢 Math Adventure</h2>
-                <div class="kids-score">Score: <span id="kidsScore">0</span></div>
-                <button class="back-btn" id="backToKidsMenu">← Back to Games</button>
+        <!-- Math Challenge Game -->
+        <div class="brain-game-container" id="mathAdventureGame" style="display: none;">
+            <div class="brain-game-header">
+                <h2>🔢 Math Challenge</h2>
+                <div class="brain-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Score:</span>
+                        <span class="stat-value" id="mathScore">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Level:</span>
+                        <span class="stat-value" id="mathLevel">1</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Streak:</span>
+                        <span class="stat-value" id="mathStreak">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Time:</span>
+                        <span class="stat-value" id="mathTime">30s</span>
+                    </div>
+                </div>
+                <div class="brain-controls">
+                    <button class="brain-control-btn" onclick="resetBrainGame()">🔄 Restart</button>
+                    <button class="brain-control-btn" onclick="goToBrainMenu()">🏠 Menu</button>
+                </div>
             </div>
-            <div class="math-problem">
-                <div class="math-question">5 + 3 = ?</div>
-                <input type="number" class="math-answer" placeholder="Your answer">
-                <button class="math-submit">Submit</button>
+            <div class="math-game-area">
+                <div class="math-problem-card">
+                    <div class="math-question" id="mathQuestion">5 + 3 = ?</div>
+                    <div class="math-options" id="mathOptions">
+                        <!-- Options will be generated dynamically -->
+                    </div>
+                    <div class="math-feedback" id="mathFeedback"></div>
+                </div>
+                <div class="math-timer-bar">
+                    <div class="timer-fill" id="mathTimerBar"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Number Sequence Game -->
+        <div class="brain-game-container" id="numberSequenceGame" style="display: none;">
+            <div class="brain-game-header">
+                <h2>🔍 Number Sequence</h2>
+                <div class="brain-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Score:</span>
+                        <span class="stat-value" id="sequenceScore">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Level:</span>
+                        <span class="stat-value" id="sequenceLevel">1</span>
+                    </div>
+                </div>
+                <div class="brain-controls">
+                    <button class="brain-control-btn" onclick="resetBrainGame()">🔄 Restart</button>
+                    <button class="brain-control-btn" onclick="goToBrainMenu()">🏠 Menu</button>
+                </div>
+            </div>
+            <div class="sequence-game-area">
+                <div class="sequence-display" id="sequenceDisplay">
+                    <!-- Sequence will be displayed here -->
+                </div>
+                <div class="sequence-input-area">
+                    <input type="number" class="sequence-input" id="sequenceInput" placeholder="What comes next?">
+                    <button class="sequence-submit" onclick="gameController.brainGamesManager.checkSequence()">Submit</button>
+                </div>
+                <div class="sequence-feedback" id="sequenceFeedback"></div>
+            </div>
+        </div>
+
+        <!-- Color Match Game -->
+        <div class="brain-game-container" id="colorMatchGame" style="display: none;">
+            <div class="brain-game-header">
+                <h2>🎨 Color Match</h2>
+                <div class="brain-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Score:</span>
+                        <span class="stat-value" id="colorScore">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Time:</span>
+                        <span class="stat-value" id="colorTime">60s</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Accuracy:</span>
+                        <span class="stat-value" id="colorAccuracy">100%</span>
+                    </div>
+                </div>
+                <div class="brain-controls">
+                    <button class="brain-control-btn" onclick="resetBrainGame()">🔄 Restart</button>
+                    <button class="brain-control-btn" onclick="goToBrainMenu()">🏠 Menu</button>
+                </div>
+            </div>
+            <div class="color-match-area">
+                <div class="color-target" id="colorTarget">
+                    <div class="target-shape" id="targetShape"></div>
+                </div>
+                <div class="color-options" id="colorOptions">
+                    <!-- Color options will be generated dynamically -->
+                </div>
+                <div class="color-feedback" id="colorFeedback"></div>
             </div>
         </div>
 
@@ -297,7 +550,7 @@
             <div class="kids-game-header">
                 <h2>📝 Word Builder</h2>
                 <div class="kids-score">Score: <span id="kidsScore">0</span></div>
-                <button class="back-btn" id="backToKidsMenu">← Back to Games</button>
+                <button class="back-btn" onclick="goToBrainMenu()">← Back to Games</button>
             </div>
             <div class="coming-soon">
                 <div class="coming-soon-icon">🚧</div>
@@ -311,7 +564,7 @@
             <div class="kids-game-header">
                 <h2>🧩 Shape Puzzle</h2>
                 <div class="kids-score">Score: <span id="kidsScore">0</span></div>
-                <button class="back-btn" id="backToKidsMenu">← Back to Games</button>
+                <button class="back-btn" onclick="goToBrainMenu()">← Back to Games</button>
             </div>
             <div class="coming-soon">
                 <div class="coming-soon-icon">🚧</div>
@@ -325,7 +578,7 @@
             <div class="kids-game-header">
                 <h2>🎨 Color Symphony</h2>
                 <div class="kids-score">Score: <span id="kidsScore">0</span></div>
-                <button class="back-btn" id="backToKidsMenu">← Back to Games</button>
+                <button class="back-btn" onclick="goToBrainMenu()">← Back to Games</button>
             </div>
             <div class="coming-soon">
                 <div class="coming-soon-icon">🚧</div>
@@ -364,7 +617,7 @@
     <script src="js/game-state.js"></script>
     <script src="js/audio-system.js"></script>
     <script src="js/visual-effects.js"></script>
-    <script src="js/connect4-game.js"></script>
+    <script src="js/progress-tracker.js"></script>
     <script src="js/kids-games.js"></script>
     <script src="js/game-controller.js"></script>
 </body>
