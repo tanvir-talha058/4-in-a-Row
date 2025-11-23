@@ -21,7 +21,7 @@ class UXEnhancer {
      */
     setupLoadingStates() {
         const addLoadingState = (button) => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function () {
                 if (!this.disabled) {
                     this.classList.add('loading');
                     setTimeout(() => {
@@ -115,7 +115,7 @@ class UXEnhancer {
                 </button>
             </div>
         `;
-        
+
         // Add styles
         const style = document.createElement('style');
         style.textContent = `
@@ -155,7 +155,7 @@ class UXEnhancer {
                 transform: translateY(-2px);
             }
         `;
-        
+
         document.head.appendChild(style);
         document.body.appendChild(errorDiv);
     }
@@ -190,7 +190,7 @@ class UXEnhancer {
                 </button>
             </div>
         `;
-        
+
         // Add styles
         const style = document.createElement('style');
         style.textContent = `
@@ -254,7 +254,7 @@ class UXEnhancer {
                 }
             }
         `;
-        
+
         document.head.appendChild(style);
         document.body.appendChild(welcomeDiv);
 
@@ -279,7 +279,7 @@ class UXEnhancer {
                 <span class="notification-text">${message}</span>
             </div>
         `;
-        
+
         const style = document.createElement('style');
         style.textContent = `
             .success-notification {
@@ -324,12 +324,12 @@ class UXEnhancer {
                 }
             }
         `;
-        
+
         if (!document.querySelector('#success-notification-styles')) {
             style.id = 'success-notification-styles';
             document.head.appendChild(style);
         }
-        
+
         document.body.appendChild(notification);
 
         setTimeout(() => {
@@ -345,7 +345,7 @@ class UXEnhancer {
         const originalText = button.textContent;
         button.textContent = message;
         button.disabled = true;
-        
+
         setTimeout(() => {
             button.textContent = originalText;
             button.disabled = false;
