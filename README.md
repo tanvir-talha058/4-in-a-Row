@@ -2,6 +2,7 @@
 
 A classic two-player connection game built with Pygame where players take turns dropping colored discs into a vertical grid, aiming to connect four of their discs horizontally, vertically, or diagonally.
 
+
 ## Features
 
 - Interactive game board with visual feedback
